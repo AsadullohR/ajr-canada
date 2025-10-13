@@ -147,9 +147,14 @@ export function PrayerTimes() {
   }, [prayerTimes]);
 
   return (
-    <section id="prayer-times" className="py-24 relative overflow-hidden bg-gradient-to-b from-emerald-900 to-emerald-800">
-      <div className="absolute inset-0 islamic-pattern opacity-10"></div>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+    <section id="prayer-times" className="py-24 relative overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900">
+      {/* Static gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-emerald-500/20 to-teal-600/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-20 -right-20 w-[600px] h-[600px] bg-gradient-to-tl from-green-500/15 via-emerald-600/10 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute top-1/3 -left-40 w-[400px] h-[400px] bg-gradient-to-br from-teal-400/15 to-cyan-500/5 rounded-full blur-3xl"></div>
+      </div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/20 via-transparent to-transparent"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center mb-16">
@@ -192,11 +197,11 @@ export function PrayerTimes() {
               </a>
             </div>
           ) : (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden shadow-2xl border border-white/20">
+            <div className="bg-white/5 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/10">
               {/* Desktop Table View */}
               <table className="w-full hidden md:table">
                 <thead>
-                  <tr className="bg-white/5 border-b border-white/20">
+                  <tr className="bg-white/10 backdrop-blur-sm border-b border-white/10">
                     <th className="px-6 py-4 text-left text-emerald-200 font-semibold">Prayer</th>
                     <th className="px-6 py-4 text-center text-emerald-200 font-semibold border-l border-white/10">Begins</th>
                     <th className="px-6 py-4 text-center text-emerald-200 font-semibold border-l border-white/10">Adhan</th>
@@ -211,10 +216,10 @@ export function PrayerTimes() {
                     return (
                       <tr
                         key={prayer.name}
-                        className={`border-b border-white/10 transition-colors duration-300 ${
+                        className={`border-b border-white/5 transition-all duration-300 ${
                           isNext && !isTimingOnly
-                            ? 'bg-gradient-to-r from-amber-500/30 to-amber-600/20'
-                            : 'hover:bg-white/5'
+                            ? 'bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-amber-600/10 backdrop-blur-sm shadow-lg shadow-amber-500/10'
+                            : 'hover:bg-white/5 backdrop-blur-sm'
                         }`}
                       >
                         <td className="px-6 py-5">
@@ -252,7 +257,7 @@ export function PrayerTimes() {
               </table>
 
               {/* Mobile Card View */}
-              <div className="md:hidden divide-y divide-white/10">
+              <div className="md:hidden divide-y divide-white/5">
                 {prayerTimes.map((prayer, index) => {
                   const isNext = index === nextPrayerIndex;
                   const isTimingOnly = !prayer.iqama;
@@ -260,10 +265,10 @@ export function PrayerTimes() {
                   return (
                     <div
                       key={prayer.name}
-                      className={`p-4 transition-colors duration-300 ${
+                      className={`p-4 transition-all duration-300 ${
                         isNext && !isTimingOnly
-                          ? 'bg-gradient-to-r from-amber-500/30 to-amber-600/20'
-                          : ''
+                          ? 'bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-amber-600/10 backdrop-blur-sm shadow-lg shadow-amber-500/10'
+                          : 'backdrop-blur-sm'
                       }`}
                     >
                       <div className={`flex items-center justify-between mb-3 ${

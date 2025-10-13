@@ -208,7 +208,6 @@ export function Hero() {
   useEffect(() => {
     const updateCountdown = () => {
       const timeUntil = getTimeUntilNextPrayer(prayerTimes);
-      console.log('Countdown updated:', timeUntil);
       setCountdown(timeUntil);
     };
 
@@ -326,9 +325,29 @@ ab          <div className="relative h-full flex items-center">
         </>
       )}
       <div className="absolute bottom-0 left-0 right-0">
-        <svg className="w-full h-24" viewBox="0 0 1440 96" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <path d="M0 0L60 10.7C120 21 240 43 360 48C480 53 600 43 720 37.3C840 32 960 32 1080 34.7C1200 37 1320 43 1380 45.3L1440 48V96H0V0Z" fill="#064e3b"/>
-          <path d="M0 16L60 24C120 32 240 48 360 53.3C480 59 600 53 720 48C840 43 960 37 1080 37.3C1200 37 1320 43 1380 45.3L1440 48V96H0V16Z" fill="#065f46"/>
+        <svg className="w-full h-32" viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#064e3b" />
+              <stop offset="25%" stopColor="#0d9488" />
+              <stop offset="50%" stopColor="#065f46" />
+              <stop offset="75%" stopColor="#14b8a6" />
+              <stop offset="100%" stopColor="#064e3b" />
+            </linearGradient>
+            <linearGradient id="waveGradient2" x1="100%" y1="0%" x2="0%" y2="0%">
+              <stop offset="0%" stopColor="#065f46" />
+              <stop offset="33%" stopColor="#10b981" />
+              <stop offset="66%" stopColor="#0d9488" />
+              <stop offset="100%" stopColor="#047857" />
+            </linearGradient>
+            <linearGradient id="waveGradient3" x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%" stopColor="#059669" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#064e3b" />
+            </linearGradient>
+          </defs>
+          <path d="M0 0L60 10.7C120 21 240 43 360 48C480 53 600 43 720 37.3C840 32 960 32 1080 34.7C1200 37 1320 43 1380 45.3L1440 48V120H0V0Z" fill="url(#waveGradient1)" opacity="0.6"/>
+          <path d="M0 16L60 24C120 32 240 48 360 53.3C480 59 600 53 720 48C840 43 960 37 1080 37.3C1200 37 1320 43 1380 45.3L1440 48V120H0V16Z" fill="url(#waveGradient2)" opacity="0.7"/>
+          <path d="M0 32L80 37.3C160 43 320 53 480 58.7C640 64 800 64 960 58.7C1120 53 1280 43 1360 37.3L1440 32V120H0V32Z" fill="url(#waveGradient3)"/>
         </svg>
       </div>
       <div className="absolute bottom-8 sm:bottom-28 left-1/2 transform -translate-x-1/2">
