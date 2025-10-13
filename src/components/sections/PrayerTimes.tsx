@@ -9,7 +9,7 @@ interface PrayerTime {
 }
 
 const SHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
-const SHEET_URL = SHEET_ID ? `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?output=csv` : "";
+const SHEET_URL = SHEET_ID ? `https://docs.google.com/spreadsheets/d/e/2PACX-${SHEET_ID}/pub?output=csv` : "";
 
 const PRAYER_TIMES_URL = 'https://www.galaxystream.com/apps/pt.asp?uid=51&country=Canada&la=&lv=&org=Al%20Bukhari%20Community%20Centre';
 
