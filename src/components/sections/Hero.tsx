@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -15,9 +15,90 @@ interface Poster {
   active: boolean;
 }
 
+interface PrayerTime {
+  name: string;
+  begins: string;
+  adhan?: string;
+  iqama?: string;
+}
+
+const SHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
+const PRAYER_TIMES_GID = import.meta.env.VITE_PRAYER_TIMES_GID || '0';
+const PRAYER_TIMES_URL = SHEET_ID ? `https://docs.google.com/spreadsheets/d/e/2PACX-${SHEET_ID}/pub?gid=${PRAYER_TIMES_GID}&single=true&output=csv` : "";
+
+const convertToMinutes = (timeStr: string): number => {
+  // Handle range format (e.g., "12:59PM - 1:04PM") by taking the first time
+  if (timeStr.includes(' - ')) {
+    timeStr = timeStr.split(' - ')[0].trim();
+  }
+
+  // Remove spaces and extract time and period
+  const cleanStr = timeStr.trim().replace(/\s+/g, '');
+  const match = cleanStr.match(/^(\d{1,2}):(\d{2})(AM|PM)$/i);
+
+  if (!match) {
+    console.error('Invalid time format:', timeStr);
+    return 0;
+  }
+
+  const hours = parseInt(match[1]);
+  const minutes = parseInt(match[2]);
+  const period = match[3].toUpperCase();
+
+  let totalMinutes = hours * 60 + minutes;
+  if (period === 'PM' && hours !== 12) {
+    totalMinutes += 12 * 60;
+  } else if (period === 'AM' && hours === 12) {
+    totalMinutes = minutes;
+  }
+
+  return totalMinutes;
+};
+
+const getTimeUntilNextPrayer = (prayerTimes: PrayerTime[]): { name: string; hours: number; minutes: number; seconds: number } | null => {
+  if (prayerTimes.length === 0) return null;
+
+  const now = new Date();
+  const torontoTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Toronto' }));
+  const currentSeconds = torontoTime.getHours() * 3600 + torontoTime.getMinutes() * 60 + torontoTime.getSeconds();
+
+  const prayersWithIqama = prayerTimes.filter(prayer => prayer.iqama);
+
+  for (let i = 0; i < prayersWithIqama.length; i++) {
+    const prayerMinutes = convertToMinutes(prayersWithIqama[i].begins);
+    const prayerSeconds = prayerMinutes * 60;
+    if (prayerSeconds > currentSeconds) {
+      const secondsUntil = prayerSeconds - currentSeconds;
+      return {
+        name: prayersWithIqama[i].name,
+        hours: Math.floor(secondsUntil / 3600),
+        minutes: Math.floor((secondsUntil % 3600) / 60),
+        seconds: secondsUntil % 60
+      };
+    }
+  }
+
+  // If no prayer found today, return first prayer tomorrow
+  if (prayersWithIqama.length > 0) {
+    const firstPrayerMinutes = convertToMinutes(prayersWithIqama[0].begins);
+    const firstPrayerSeconds = firstPrayerMinutes * 60;
+    const secondsUntil = (24 * 3600 - currentSeconds) + firstPrayerSeconds;
+    return {
+      name: prayersWithIqama[0].name,
+      hours: Math.floor(secondsUntil / 3600),
+      minutes: Math.floor((secondsUntil % 3600) / 60),
+      seconds: secondsUntil % 60
+    };
+  }
+
+  return null;
+};
+
 export function Hero() {
   const [posters, setPosters] = useState<Poster[]>([]);
   const [loading, setLoading] = useState(true);
+  const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
+  const [countdown, setCountdown] = useState<{ name: string; hours: number; minutes: number; seconds: number } | null>(null);
 
   useEffect(() => {
     const fetchPosters = async () => {
@@ -80,6 +161,63 @@ export function Hero() {
 
     fetchPosters();
   }, []);
+
+  // Fetch prayer times
+  useEffect(() => {
+    const fetchPrayerTimes = async () => {
+      try {
+        if (!PRAYER_TIMES_URL) {
+          console.error('Prayer times URL not configured');
+          return;
+        }
+
+        const response = await fetch(PRAYER_TIMES_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const csvData = await response.text();
+
+        const rows = csvData.split('\n').slice(1);
+        const parsedTimes = rows
+          .filter(row => row.trim())
+          .map(row => {
+            const columns = row.split(',').map(cell =>
+              cell.replace(/^"|"$/g, '').trim()
+            );
+            const [name = '', begins = '', adhan = '', iqama = ''] = columns;
+            return {
+              name,
+              begins,
+              ...(adhan ? { adhan } : {}),
+              ...(iqama ? { iqama } : {})
+            };
+          })
+          .filter(prayer => prayer.name && prayer.begins);
+
+        setPrayerTimes(parsedTimes);
+      } catch (err) {
+        console.error('Error fetching prayer times for countdown:', err);
+        setPrayerTimes([]);
+      }
+    };
+
+    fetchPrayerTimes();
+  }, []);
+
+  // Update countdown every second
+  useEffect(() => {
+    const updateCountdown = () => {
+      const timeUntil = getTimeUntilNextPrayer(prayerTimes);
+      console.log('Countdown updated:', timeUntil);
+      setCountdown(timeUntil);
+    };
+
+    if (prayerTimes.length > 0) {
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 1000); // Update every second
+      return () => clearInterval(interval);
+    }
+  }, [prayerTimes]);
 
   const sliderSettings = {
     dots: true,
@@ -193,13 +331,19 @@ ab          <div className="relative h-full flex items-center">
           <path d="M0 16L60 24C120 32 240 48 360 53.3C480 59 600 53 720 48C840 43 960 37 1080 37.3C1200 37 1320 43 1380 45.3L1440 48V96H0V16Z" fill="#065f46"/>
         </svg>
       </div>
-      <a 
-        href="#prayer-times" 
-        className="absolute bottom-28 left-1/2 transform -translate-x-1/2 text-white animate-bounce"
-        aria-label="Scroll down"
-      >
-        <ChevronDown className="w-8 h-8" />
-      </a>
+      <div className="absolute bottom-8 sm:bottom-28 left-1/2 transform -translate-x-1/2">
+        {countdown ? (
+          <a
+            href="#prayer-times"
+            className="text-white font-bold text-lg sm:text-xl"
+            aria-label="Time until next prayer"
+          >
+            {countdown.name} : {countdown.hours > 0 && `${countdown.hours}h `}{countdown.minutes}m {countdown.seconds}s
+          </a>
+        ) : (
+          <div className="text-white font-bold text-lg sm:text-xl">Loading...</div>
+        )}
+      </div>
     </section>
   );
 }
