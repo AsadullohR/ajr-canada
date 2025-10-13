@@ -52,7 +52,6 @@ export function Programs() {
     const fetchPrograms = async () => {
       try {
         if (!SHEET_ID || !PROGRAMS_GID) {
-          console.warn('Spreadsheet ID or Programs GID not found in environment variables, using fallback data');
           setPrograms(FALLBACK_PROGRAMS);
           setLoading(false);
           return;
@@ -64,7 +63,6 @@ export function Programs() {
         }
         const csvData = await response.text();
 
-        console.log('Raw CSV Data:', csvData);
 
         // Parse CSV data (skip header row)
         const rows = csvData.split('\n').slice(1);
@@ -74,7 +72,6 @@ export function Programs() {
             const columns = row.split(',').map(cell =>
               cell.replace(/^"|"$/g, '').trim() // Remove quotes and whitespace
             );
-            console.log('Parsed columns:', columns);
             const [name = '', time = '', description = '', card_image = ''] = columns;
 
             // Convert Unsplash photo page URL to direct image URL
