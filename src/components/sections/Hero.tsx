@@ -188,12 +188,10 @@ export function Hero() {
         </>
       )}
       <div className="absolute bottom-0 left-0 right-0">
-        <div className="relative">
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent"></div>
-          <svg className="w-full h-24 text-white" viewBox="0 0 1440 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 96L60 85.3C120 75 240 53 360 48C480 43 600 53 720 58.7C840 64 960 64 1080 61.3C1200 59 1320 53 1380 50.7L1440 48V0H1380C1320 0 1200 0 1080 0C960 0 840 0 720 0C600 0 480 0 360 0C240 0 120 0 60 0H0V96Z" fill="currentColor"/>
-          </svg>
-        </div>
+        <svg className="w-full h-24" viewBox="0 0 1440 96" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path d="M0 0L60 10.7C120 21 240 43 360 48C480 53 600 43 720 37.3C840 32 960 32 1080 34.7C1200 37 1320 43 1380 45.3L1440 48V96H0V0Z" fill="white" fillOpacity="0.1"/>
+          <path d="M0 16L60 24C120 32 240 48 360 53.3C480 59 600 53 720 48C840 43 960 37 1080 37.3C1200 37 1320 43 1380 45.3L1440 48V96H0V16Z" fill="white" fillOpacity="0.05"/>
+        </svg>
       </div>
       <a 
         href="#prayer-times" 
