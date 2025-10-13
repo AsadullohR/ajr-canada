@@ -43,22 +43,42 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
     'contact'
   ];
 
+  // Determine navbar background based on section
+  const isLightSection = ['programs', 'services', 'contact'].includes(activeSection);
+  const isDarkSection = ['home', 'prayer-times'].includes(activeSection);
+
+  let navBgClass = 'bg-transparent';
+  let textColorClass = 'text-white';
+  let blurClass = '';
+
+  if (!isScrolled) {
+    // At the very top - completely transparent
+    navBgClass = 'bg-transparent';
+    textColorClass = 'text-white';
+  } else if (isDarkSection) {
+    // Scrolling through dark sections (home, prayer-times) - dark transparent blur
+    navBgClass = 'bg-black/30 shadow-md';
+    textColorClass = 'text-white';
+    blurClass = 'backdrop-blur-md';
+  } else if (isLightSection) {
+    // Scrolling through light sections (programs+) - white transparent blur
+    navBgClass = 'bg-white/70 shadow-md';
+    textColorClass = 'text-gray-700';
+    blurClass = 'backdrop-blur-md';
+  }
+
   return (
-    <nav 
-      className={`fixed w-full z-50 transition-all duration-300 backdrop-blur-md ${
-        isScrolled ? 'bg-white/95 shadow-md' : 'bg-transparent'
-      }`}
+    <nav
+      className={`fixed w-full z-50 transition-all duration-300 ${blurClass} ${navBgClass}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
             <a href="#home" className="flex items-center">
-              <img 
-                src="/images/Ajr Islamic Foundation Logo PNG.png" 
-                alt="Ajr Islamic Foundation Logo" 
-                className={`h-16 transition-opacity duration-300 ${
-                  isScrolled ? 'opacity-100' : 'opacity-90 hover:opacity-100'
-                }`}
+              <img
+                src="/images/Ajr Islamic Foundation Logo PNG.png"
+                alt="Ajr Islamic Foundation Logo"
+                className="h-16 transition-opacity duration-300 opacity-90 hover:opacity-100"
               />
             </a>
           </div>
@@ -70,7 +90,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                 <a
                   key={item}
                   href={`#${item}`}
-                  className={`nav-link ${isScrolled ? 'text-gray-700' : 'text-white'} ${
+                  className={`nav-link ${textColorClass} ${
                     activeSection === item ? 'nav-link-active' : ''
                   }`}
                 >
@@ -92,7 +112,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`p-2 rounded-md ${isScrolled ? 'text-gray-700' : 'text-white'}`}
+              className={`p-2 rounded-md ${textColorClass}`}
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
