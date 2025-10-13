@@ -38,11 +38,11 @@
   }
 
   .nav-link {
-    @apply px-4 py-2 text-sm font-medium transition-all duration-300 rounded-md hover:bg-emerald-700/20 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-600 after:transition-all hover:after:w-full;
+    @apply px-4 py-2 text-sm font-medium transition-all duration-300 rounded-md hover:bg-emerald-700/20 relative;
   }
 
   .nav-link-active {
-    @apply bg-emerald-700/20 after:w-full;
+    @apply bg-emerald-700/20 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-emerald-600;
   }
 
   .section-title {

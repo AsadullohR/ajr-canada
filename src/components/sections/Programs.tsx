@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -8,31 +8,38 @@ interface Program {
   name: string;
   time: string;
   description: string;
+  card_image?: string;
 }
 
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-${import.meta.env.VITE_SPREADSHEET_ID}/pub?output=csv`;
+const SHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
+const PROGRAMS_GID = import.meta.env.VITE_PROGRAMS_GID;
+const SHEET_URL = SHEET_ID && PROGRAMS_GID ? `https://docs.google.com/spreadsheets/d/e/2PACX-${SHEET_ID}/pub?gid=${PROGRAMS_GID}&output=csv` : "";
 
 // Fallback data in case of API failure
 const FALLBACK_PROGRAMS: Program[] = [
   {
     name: "Friday Prayer",
     time: "1:30 PM - 2:30 PM",
-    description: "Weekly congregational prayer and khutbah focusing on relevant Islamic topics and community matters."
+    description: "Weekly congregational prayer and khutbah focusing on relevant Islamic topics and community matters.",
+    card_image: "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=400&h=300&fit=crop"
   },
   {
     name: "Weekend Islamic School",
     time: "Saturday 10:00 AM - 2:00 PM",
-    description: "Comprehensive Islamic education for children including Quran, Islamic studies, and Arabic language."
+    description: "Comprehensive Islamic education for children including Quran, Islamic studies, and Arabic language.",
+    card_image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop"
   },
   {
     name: "Adult Quran Class",
     time: "Sunday 10:00 AM - 12:00 PM",
-    description: "Quran recitation and tajweed classes for adults of all levels."
+    description: "Quran recitation and tajweed classes for adults of all levels.",
+    card_image: "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=300&fit=crop"
   },
   {
     name: "Sisters' Halaqa",
     time: "Wednesday 7:00 PM - 8:30 PM",
-    description: "Weekly gathering for sisters to discuss Islamic topics and build community."
+    description: "Weekly gathering for sisters to discuss Islamic topics and build community.",
+    card_image: "https://images.unsplash.com/photo-1519682577862-22b62b24e493?w=400&h=300&fit=crop"
   }
 ];
 
@@ -44,8 +51,7 @@ export function Programs() {
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        if (!import.meta.env.VITE_SPREADSHEET_ID) {
-          console.warn('Spreadsheet ID not found in environment variables, using fallback data');
+        if (!SHEET_ID || !PROGRAMS_GID) {
           setPrograms(FALLBACK_PROGRAMS);
           setLoading(false);
           return;
@@ -56,17 +62,32 @@ export function Programs() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const csvData = await response.text();
-        
+
+
         // Parse CSV data (skip header row)
         const rows = csvData.split('\n').slice(1);
         const parsedPrograms = rows
           .filter(row => row.trim()) // Skip empty rows
           .map(row => {
             const columns = row.split(',').map(cell =>
-              cell.replace(/^"|"$/g, '') // Remove quotes
+              cell.replace(/^"|"$/g, '').trim() // Remove quotes and whitespace
             );
-            const [name = '', time = '', description = ''] = columns;
-            return { name, time, description };
+            const [name = '', time = '', description = '', card_image = ''] = columns;
+
+            // Convert Unsplash photo page URL to direct image URL
+            let imageUrl = card_image ? card_image.trim() : '';
+            if (imageUrl.includes('unsplash.com/photos/')) {
+              // Extract photo ID from URL like: https://unsplash.com/photos/a-wooden-chess-board-with-chess-pieces-on-it-hayc4n2dI-k
+              const photoId = imageUrl.split('/photos/')[1]?.split('?')[0]?.split('-').pop();
+              if (photoId) {
+                imageUrl = `https://images.unsplash.com/photo-${photoId}?w=400&h=300&fit=crop`;
+              }
+            } else if (imageUrl && !imageUrl.includes('?')) {
+              // If it's already a direct image URL without params, add them
+              imageUrl = `${imageUrl}?w=400&h=300&fit=crop`;
+            }
+
+            return { name, time, description, card_image: imageUrl || undefined };
           })
           .filter(program => program.name && program.time && program.description)
 
@@ -152,16 +173,31 @@ export function Programs() {
           <div className="program-slider">
             <Slider {...sliderSettings}>
               {programs.map((program, index) => (
-                <div key={index} className="px-3">
-                  <div className="card p-6 h-full flex flex-col transform hover:scale-105 transition-transform duration-300">
-                    <Clock className="w-8 h-8 text-emerald-600 mb-4" />
-                    <h3 className="text-xl font-semibold mb-2 text-gray-900">{program.name}</h3>
-                    <p className="text-emerald-600 font-medium mb-2">{program.time}</p>
-                    <p className="text-gray-600 flex-grow">{program.description}</p>
-                    <a href="#contact" className="mt-4 inline-flex items-center text-emerald-600 hover:text-emerald-700">
-                      Learn more
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </a>
+                <div key={index} className="px-3 py-4">
+                  <div className="card overflow-hidden flex flex-col transform hover:scale-105 transition-transform duration-300" style={{ height: '370px' }}>
+                    {program.card_image ? (
+                      <div className="relative h-48 w-full overflow-hidden flex-shrink-0">
+                        <img
+                          src={program.card_image}
+                          alt={program.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement?.classList.add('hidden');
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/20"></div>
+                      </div>
+                    ) : (
+                      <div className="p-6 pb-0 flex-shrink-0">
+                        <Clock className="w-8 h-8 text-emerald-600 mb-4" />
+                      </div>
+                    )}
+                    <div className="p-6 flex flex-col flex-grow">
+                      <h3 className="text-xl font-semibold mb-2 text-gray-900">{program.name}</h3>
+                      <p className="text-emerald-600 font-medium mb-2">{program.time}</p>
+                      <p className="text-gray-600 flex-grow">{program.description}</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -175,7 +211,7 @@ export function Programs() {
             href="https://app.irm.io/ajrcanada.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-secondary text-lg px-12 py-4"
+            className="btn btn-secondary text-lg px-12 py-4 mt-5"
           >
             Support Our Programs - Donate Now
           </a>
