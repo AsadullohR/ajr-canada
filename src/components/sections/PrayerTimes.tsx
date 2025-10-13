@@ -7,16 +7,10 @@ interface PrayerTime {
   iqama?: string;
 }
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSO04xxeyJsLrFVQvCojttrhinJZH2ZalTMa7ivH-jhlyFbva8iIau0K0dNi5qoRTzjndsQhdvVKDhF/pub?output=csv";
+const SHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
+const SHEET_URL = SHEET_ID ? `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?output=csv` : "";
 
-const FALLBACK_TIMES: PrayerTime[] = [
-  { name: 'Fajr', begins: '5:30 AM', iqama: '5:45 AM' },
-  { name: 'Sunrise', begins: '6:45 AM' },
-  { name: 'Dhuhr', begins: '12:30 PM', iqama: '1:30 PM' },
-  { name: 'Asr', begins: '3:45 PM', iqama: '4:15 PM' },
-  { name: 'Maghrib', begins: '5:45 PM', iqama: '5:50 PM' },
-  { name: 'Isha', begins: '7:15 PM', iqama: '7:45 PM' },
-];
+const PRAYER_TIMES_URL = 'https://www.galaxystream.com/apps/pt.asp?uid=51&country=Canada&la=&lv=&org=Al%20Bukhari%20Community%20Centre';
 
 const getPrayerIcon = (name: string) => {
   switch (name.toLowerCase()) {
@@ -63,7 +57,7 @@ const getNextPrayer = (prayerTimes: PrayerTime[]): number => {
 };
 
 export function PrayerTimes() {
-  const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>(FALLBACK_TIMES);
+  const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentDate] = useState(new Date());
@@ -73,10 +67,7 @@ export function PrayerTimes() {
     const fetchPrayerTimes = async () => {
       try {
         if (!SHEET_URL) {
-          console.warn('Prayer times sheet URL not configured, using fallback data');
-          setPrayerTimes(FALLBACK_TIMES);
-          setLoading(false);
-          return;
+          throw new Error('Prayer times sheet URL not configured');
         }
 
         const response = await fetch(SHEET_URL);
@@ -105,8 +96,8 @@ export function PrayerTimes() {
         setError(null);
       } catch (err) {
         console.error('Error fetching prayer times:', err.message || err);
-        setError('Failed to load prayer times. Using fallback data.');
-        setPrayerTimes(FALLBACK_TIMES);
+        setError('Failed to load prayer times.');
+        setPrayerTimes([]);
       } finally {
         setLoading(false);
       }
@@ -159,7 +150,17 @@ export function PrayerTimes() {
               <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-500"></div>
             </div>
           ) : error ? (
-            <div className="text-center text-red-300 py-12">{error}</div>
+            <div className="text-center py-12">
+              <div className="text-red-300 mb-4">{error}</div>
+              <a
+                href={PRAYER_TIMES_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary"
+              >
+                View Prayer Times on Galaxy Stream
+              </a>
+            </div>
           ) : (
             <div className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden shadow-2xl">
               <div className="divide-y divide-white/10">
