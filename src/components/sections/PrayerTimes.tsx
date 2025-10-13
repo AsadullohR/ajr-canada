@@ -36,10 +36,32 @@ const getPrayerIcon = (name: string) => {
 };
 
 const convertToMinutes = (timeStr: string): number => {
-  const [time, period] = timeStr.split(' ');
-  const [hours, minutes] = time.split(':').map(Number);
-  const totalMinutes = hours * 60 + minutes;
-  return period === 'PM' && hours !== 12 ? totalMinutes + 12 * 60 : totalMinutes;
+  // Handle range format (e.g., "12:59PM - 1:04PM") by taking the first time
+  if (timeStr.includes(' - ')) {
+    timeStr = timeStr.split(' - ')[0].trim();
+  }
+
+  // Remove spaces and extract time and period
+  const cleanStr = timeStr.trim().replace(/\s+/g, '');
+  const match = cleanStr.match(/^(\d{1,2}):(\d{2})(AM|PM)$/i);
+
+  if (!match) {
+    console.error('Invalid time format:', timeStr);
+    return 0;
+  }
+
+  const hours = parseInt(match[1]);
+  const minutes = parseInt(match[2]);
+  const period = match[3].toUpperCase();
+
+  let totalMinutes = hours * 60 + minutes;
+  if (period === 'PM' && hours !== 12) {
+    totalMinutes += 12 * 60;
+  } else if (period === 'AM' && hours === 12) {
+    totalMinutes = minutes;
+  }
+
+  return totalMinutes;
 };
 
 const getNextPrayer = (prayerTimes: PrayerTime[]): number => {
