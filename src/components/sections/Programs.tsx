@@ -10,7 +10,9 @@ interface Program {
   description: string;
 }
 
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-${import.meta.env.VITE_SPREADSHEET_ID}/pub?output=csv`;
+const SHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
+const PROGRAMS_GID = import.meta.env.VITE_PROGRAMS_GID;
+const SHEET_URL = SHEET_ID && PROGRAMS_GID ? `https://docs.google.com/spreadsheets/d/e/2PACX-${SHEET_ID}/pub?gid=${PROGRAMS_GID}&output=csv` : "";
 
 // Fallback data in case of API failure
 const FALLBACK_PROGRAMS: Program[] = [
@@ -44,8 +46,8 @@ export function Programs() {
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        if (!import.meta.env.VITE_SPREADSHEET_ID) {
-          console.warn('Spreadsheet ID not found in environment variables, using fallback data');
+        if (!SHEET_ID || !PROGRAMS_GID) {
+          console.warn('Spreadsheet ID or Programs GID not found in environment variables, using fallback data');
           setPrograms(FALLBACK_PROGRAMS);
           setLoading(false);
           return;
