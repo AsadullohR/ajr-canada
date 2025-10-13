@@ -107,7 +107,7 @@ export function Hero() {
                   alt={poster.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-900/90 to-emerald-950/95"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-900/85 to-gray-950/90"></div>
                 <div className="absolute inset-0 islamic-pattern opacity-30"></div>
                 <div className="absolute inset-0 flex items-center">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -141,13 +141,13 @@ export function Hero() {
           <div className="absolute inset-0">
             <img
               className="w-full h-full object-cover"
-              src="https://images.unsplash.com/photo-1542324216541-c84c8ba6db04?auto=format&fit=crop&q=80&w=3000"
-              alt="Beautiful Islamic architecture with Arabic calligraphy"
+              src="/images/hero_background.jpg"
+              alt="Inside of Al-Bukhari Community Centre"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-900/90 to-emerald-950/95"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-900/85 to-gray-950/90"></div>
             <div className="absolute inset-0 islamic-pattern opacity-30"></div>
           </div>
-          <div className="relative h-full flex items-center">
+ab          <div className="relative h-full flex items-center">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="max-w-3xl animate-fade-in space-y-6 md:space-y-8">
                 <div className="space-y-4 md:space-y-6">
@@ -189,8 +189,8 @@ export function Hero() {
       )}
       <div className="absolute bottom-0 left-0 right-0">
         <svg className="w-full h-24" viewBox="0 0 1440 96" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <path d="M0 0L60 10.7C120 21 240 43 360 48C480 53 600 43 720 37.3C840 32 960 32 1080 34.7C1200 37 1320 43 1380 45.3L1440 48V96H0V0Z" fill="white" fillOpacity="0.1"/>
-          <path d="M0 16L60 24C120 32 240 48 360 53.3C480 59 600 53 720 48C840 43 960 37 1080 37.3C1200 37 1320 43 1380 45.3L1440 48V96H0V16Z" fill="white" fillOpacity="0.05"/>
+          <path d="M0 0L60 10.7C120 21 240 43 360 48C480 53 600 43 720 37.3C840 32 960 32 1080 34.7C1200 37 1320 43 1380 45.3L1440 48V96H0V0Z" fill="#064e3b"/>
+          <path d="M0 16L60 24C120 32 240 48 360 53.3C480 59 600 53 720 48C840 43 960 37 1080 37.3C1200 37 1320 43 1380 45.3L1440 48V96H0V16Z" fill="#065f46"/>
         </svg>
       </div>
       <a 
