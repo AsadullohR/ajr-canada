@@ -174,7 +174,7 @@ export function Programs() {
             <Slider {...sliderSettings}>
               {programs.map((program, index) => (
                 <div key={index} className="px-3 py-4">
-                  <div className="card overflow-hidden flex flex-col transform hover:scale-105 transition-transform duration-300" style={{ height: '370px' }}>
+                  <div className="card overflow-hidden flex flex-col transform md:hover:scale-105 transition-transform duration-300" style={{ height: '370px' }}>
                     {program.card_image ? (
                       <div className="relative h-48 w-full overflow-hidden flex-shrink-0">
                         <img

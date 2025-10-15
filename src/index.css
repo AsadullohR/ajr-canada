@@ -55,7 +55,7 @@
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-sm transition-all duration-300 hover:shadow-xl border border-gray-100/50 backdrop-blur-sm bg-white/90 relative overflow-hidden;
+    @apply bg-white rounded-xl shadow-lg transition-all duration-300 md:hover:shadow-xl border border-gray-100/50 backdrop-blur-sm bg-white/90 relative overflow-hidden;
   }
 
   .card::before {
@@ -63,8 +63,10 @@
     @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-emerald-400 transform origin-left scale-x-0 transition-transform duration-300;
   }
 
-  .card:hover::before {
-    @apply scale-x-100;
+  @media (min-width: 768px) {
+    .card:hover::before {
+      @apply scale-x-100;
+    }
   }
 
   .prayer-time-card {
