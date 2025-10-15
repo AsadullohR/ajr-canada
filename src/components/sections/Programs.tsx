@@ -166,8 +166,8 @@ export function Programs() {
       {
         breakpoint: 640,
         settings: {
-          slidesToShow: 2,
-          infinite: programs.length > 2,
+          slidesToShow: 1,
+          infinite: programs.length > 1,
         }
       }
     ]
