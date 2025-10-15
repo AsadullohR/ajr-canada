@@ -141,7 +141,7 @@ export function Hero() {
   }, [prayerTimes]);
 
   return (
-    <section id="home" className="relative h-[90vh] md:h-screen overflow-hidden">
+    <section id="home" className="relative h-screen overflow-hidden">
       {/* YouTube Video Background */}
       <div className="absolute inset-0 w-full h-full">
         <iframe
@@ -158,8 +158,8 @@ export function Hero() {
       {/* Content */}
       <div className="relative h-full flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl animate-fade-in space-y-6 md:space-y-8">
-            <div className="space-y-4 md:space-y-6">
+          <div className="max-w-3xl animate-fade-in space-y-12 md:space-y-16">
+            <div className="space-y-10 md:space-y-12">
               <div className="inline-block">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif font-semibold tracking-tight text-white">
                   Welcome to<br />
@@ -171,66 +171,35 @@ export function Hero() {
                   </span>
                 </h1>
               </div>
-              <p className="text-lg md:text-xl text-emerald-50 max-w-2xl leading-relaxed">
-                Serving the Muslim community with faith, education, and compassion. Join us in building a stronger, more connected ummah.
+              <p className="text-lg md:text-xl text-emerald-50 max-w-2xl leading-relaxed italic font-serif">
+                "Whatever you spend in good is for yourselves, and your reward is with Allah." - Quran 2:272
               </p>
             </div>
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
               <a
-                href="#prayer-times"
-                className="btn btn-primary group"
+                href="https://app.irm.io/ajrcanada.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary group text-lg px-8 py-4"
               >
-                Prayer Times
-                <ChevronRight className="ml-2 h-5 w-5 transform transition-transform group-hover:translate-x-1" />
-              </a>
-              <a
-                href="#programs"
-                className="btn btn-secondary group"
-              >
-                Our Programs
+                Donate Now
                 <ChevronRight className="ml-2 h-5 w-5 transform transition-transform group-hover:translate-x-1" />
               </a>
             </div>
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg className="w-full h-32" viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#064e3b" />
-              <stop offset="25%" stopColor="#0d9488" />
-              <stop offset="50%" stopColor="#065f46" />
-              <stop offset="75%" stopColor="#14b8a6" />
-              <stop offset="100%" stopColor="#064e3b" />
-            </linearGradient>
-            <linearGradient id="waveGradient2" x1="100%" y1="0%" x2="0%" y2="0%">
-              <stop offset="0%" stopColor="#065f46" />
-              <stop offset="33%" stopColor="#10b981" />
-              <stop offset="66%" stopColor="#0d9488" />
-              <stop offset="100%" stopColor="#047857" />
-            </linearGradient>
-            <linearGradient id="waveGradient3" x1="50%" y1="0%" x2="50%" y2="100%">
-              <stop offset="0%" stopColor="#059669" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#064e3b" />
-            </linearGradient>
-          </defs>
-          <path d="M0 0L60 10.7C120 21 240 43 360 48C480 53 600 43 720 37.3C840 32 960 32 1080 34.7C1200 37 1320 43 1380 45.3L1440 48V120H0V0Z" fill="url(#waveGradient1)" opacity="0.6"/>
-          <path d="M0 16L60 24C120 32 240 48 360 53.3C480 59 600 53 720 48C840 43 960 37 1080 37.3C1200 37 1320 43 1380 45.3L1440 48V120H0V16Z" fill="url(#waveGradient2)" opacity="0.7"/>
-          <path d="M0 32L80 37.3C160 43 320 53 480 58.7C640 64 800 64 960 58.7C1120 53 1280 43 1360 37.3L1440 32V120H0V32Z" fill="url(#waveGradient3)"/>
-        </svg>
-      </div>
-      <div className="absolute bottom-8 sm:bottom-28 left-1/2 transform -translate-x-1/2">
+      <div className="absolute bottom-8 sm:bottom-16 left-1/2 transform -translate-x-1/2">
         {countdown ? (
           <a
             href="#prayer-times"
-            className="text-white font-bold text-lg sm:text-xl"
+            className="text-white font-bold text-xl sm:text-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(16,185,129,0.5)] hover:drop-shadow-[0_4px_12px_rgba(16,185,129,0.7)] transition-all duration-300"
             aria-label="Time until next prayer"
           >
             {countdown.name} : {countdown.hours > 0 && `${countdown.hours}h `}{countdown.minutes}m {countdown.seconds}s
           </a>
         ) : (
-          <div className="text-white font-bold text-lg sm:text-xl">Loading...</div>
+          <div className="text-white font-bold text-xl sm:text-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(16,185,129,0.5)]">Loading...</div>
         )}
       </div>
     </section>

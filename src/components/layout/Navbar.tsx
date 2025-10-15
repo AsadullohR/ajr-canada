@@ -78,7 +78,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
               <img
                 src="/images/Ajr Islamic Foundation Logo PNG.png"
                 alt="Ajr Islamic Foundation Logo"
-                className="h-16 transition-opacity duration-300 opacity-90 hover:opacity-100"
+                className="h-12 transition-opacity duration-300 opacity-90 hover:opacity-100"
               />
             </a>
           </div>
