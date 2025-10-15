@@ -127,7 +127,7 @@
   /* Mobile optimizations */
   @media (max-width: 640px) {
     .section-title {
-      @apply text-2xl after:w-16;
+      @apply text-4xl after:w-16;
     }
 
     .btn {

@@ -213,7 +213,7 @@ export function Programs() {
             rel="noopener noreferrer"
             className="btn btn-secondary text-lg px-12 py-4 mt-5"
           >
-            Support Our Programs - Donate Now
+            Support Our Programs
           </a>
         </div>
       </div>
