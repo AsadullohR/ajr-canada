@@ -172,10 +172,15 @@ export function PrayerTimes() {
                 timeZone: 'America/Toronto'
               })}</span>
             </div>
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=1101+Finch+Ave+W+Unit+10+North+York+ON+M3J+3L6"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full hover:bg-white/20 transition-colors cursor-pointer"
+            >
               <MapPin className="w-5 h-5" />
-              <span>Al Bukhari Community Centre</span>
-            </div>
+              <span>1101 Finch Ave W., Unit #10</span>
+            </a>
           </div>
         </div>
         

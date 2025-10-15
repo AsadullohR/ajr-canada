@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface PrayerTime {
   name: string;
@@ -161,7 +161,7 @@ export function Hero() {
           <div className="max-w-3xl animate-fade-in space-y-12 md:space-y-16">
             <div className="space-y-10 md:space-y-12">
               <div className="inline-block">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif font-semibold tracking-tight text-white">
+                <h1 className="text-5xl lg:text-6xl xl:text-7xl font-serif font-semibold tracking-tight text-white">
                   Welcome to<br />
                   <span className="text-emerald-400 relative">
                     Al-Bukhari Community Centre
@@ -180,27 +180,38 @@ export function Hero() {
                 href="https://app.irm.io/ajrcanada.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-secondary group text-lg px-8 py-4"
+                className="group relative inline-flex items-center justify-center px-10 py-5 text-xl font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(251,146,60,0.8)] hover:scale-105 active:scale-95"
               >
-                Donate Now
-                <ChevronRight className="ml-2 h-5 w-5 transform transition-transform group-hover:translate-x-1" />
+                <span className="relative z-10">
+                  Donate and earn Ajr
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-600 rounded-lg blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
               </a>
+              {countdown ? (
+                <a
+                  href="#prayer-times"
+                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:scale-105 active:scale-95"
+                  aria-label="Time until next prayer"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <span className="tracking-wide">
+                      {countdown.name}: {countdown.hours > 0 && `${countdown.hours}h `}{countdown.minutes}m {countdown.seconds}s
+                    </span>
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-teal-600 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </a>
+              ) : (
+                <button
+                  className="px-8 py-4 text-lg font-semibold text-emerald-300 bg-emerald-950/50 border border-emerald-700/50 rounded-lg cursor-not-allowed opacity-60"
+                  disabled
+                >
+                  Loading prayer times...
+                </button>
+              )}
             </div>
           </div>
         </div>
-      </div>
-      <div className="absolute bottom-8 sm:bottom-16 left-1/2 transform -translate-x-1/2">
-        {countdown ? (
-          <a
-            href="#prayer-times"
-            className="text-white font-bold text-xl sm:text-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(16,185,129,0.5)] hover:drop-shadow-[0_4px_12px_rgba(16,185,129,0.7)] transition-all duration-300"
-            aria-label="Time until next prayer"
-          >
-            {countdown.name} : {countdown.hours > 0 && `${countdown.hours}h `}{countdown.minutes}m {countdown.seconds}s
-          </a>
-        ) : (
-          <div className="text-white font-bold text-xl sm:text-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(16,185,129,0.5)]">Loading...</div>
-        )}
       </div>
     </section>
   );
