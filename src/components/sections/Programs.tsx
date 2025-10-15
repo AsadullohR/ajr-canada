@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -42,6 +42,33 @@ const FALLBACK_PROGRAMS: Program[] = [
     card_image: "https://images.unsplash.com/photo-1519682577862-22b62b24e493?w=400&h=300&fit=crop"
   }
 ];
+
+// Simple arrow components
+function NextArrow(props: any) {
+  const { onClick } = props;
+  return (
+    <button
+      onClick={onClick}
+      className="absolute -right-2 md:-right-14 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-9 md:h-9 bg-black hover:bg-gray-800 rounded-full flex items-center justify-center transition-all shadow-md hover:scale-110"
+      aria-label="Next"
+    >
+      <ChevronRight className="w-4 h-4 text-white" />
+    </button>
+  );
+}
+
+function PrevArrow(props: any) {
+  const { onClick } = props;
+  return (
+    <button
+      onClick={onClick}
+      className="absolute -left-2 md:-left-14 top-1/2 -translate-y-1/2 z-10 w-7 h-7 md:w-9 md:h-9 bg-black hover:bg-gray-800 rounded-full flex items-center justify-center transition-all shadow-md hover:scale-110"
+      aria-label="Previous"
+    >
+      <ChevronLeft className="w-4 h-4 text-white" />
+    </button>
+  );
+}
 
 export function Programs() {
   const [programs, setPrograms] = useState<Program[]>([]);
@@ -111,30 +138,36 @@ export function Programs() {
 
   const sliderSettings = {
     dots: true,
-    infinite: true,
+    infinite: programs.length > 4,
     speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 5000,
+    autoplaySpeed: 2000,
     pauseOnHover: true,
+    cssEase: "linear",
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
     responsive: [
       {
         breakpoint: 1280,
         settings: {
           slidesToShow: 3,
+          infinite: programs.length > 3,
         }
       },
       {
         breakpoint: 1024,
         settings: {
           slidesToShow: 2,
+          infinite: programs.length > 2,
         }
       },
       {
         breakpoint: 640,
         settings: {
           slidesToShow: 1,
+          infinite: programs.length > 1,
         }
       }
     ]
@@ -170,11 +203,11 @@ export function Programs() {
             </button>
           </div>
         ) : (
-          <div className="program-slider">
+          <div className="relative px-6 md:px-10">
             <Slider {...sliderSettings}>
               {programs.map((program, index) => (
                 <div key={index} className="px-3 py-4">
-                  <div className="card overflow-hidden flex flex-col transform hover:scale-105 transition-transform duration-300" style={{ height: '370px' }}>
+                  <div className="card overflow-hidden flex flex-col transform md:hover:scale-105 transition-transform duration-300" style={{ height: '370px' }}>
                     {program.card_image ? (
                       <div className="relative h-48 w-full overflow-hidden flex-shrink-0">
                         <img
@@ -213,7 +246,7 @@ export function Programs() {
             rel="noopener noreferrer"
             className="btn btn-secondary text-lg px-12 py-4 mt-5"
           >
-            Support Our Programs - Donate Now
+            Support Our Programs
           </a>
         </div>
       </div>

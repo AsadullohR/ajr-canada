@@ -55,7 +55,7 @@
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-sm transition-all duration-300 hover:shadow-xl border border-gray-100/50 backdrop-blur-sm bg-white/90 relative overflow-hidden;
+    @apply bg-white rounded-xl shadow-lg transition-all duration-300 md:hover:shadow-xl border border-gray-100/50 backdrop-blur-sm bg-white/90 relative overflow-hidden;
   }
 
   .card::before {
@@ -63,8 +63,10 @@
     @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-emerald-400 transform origin-left scale-x-0 transition-transform duration-300;
   }
 
-  .card:hover::before {
-    @apply scale-x-100;
+  @media (min-width: 768px) {
+    .card:hover::before {
+      @apply scale-x-100;
+    }
   }
 
   .prayer-time-card {
@@ -76,46 +78,15 @@
   }
 
   /* Custom styles for react-slick */
-  .program-slider {
-    @apply mx-auto max-w-[95%] md:max-w-full;
-  }
-
-  .program-slider .slick-slide {
-    @apply px-2;
-  }
-
-  .program-slider .slick-prev,
-  .program-slider .slick-next {
-    @apply w-10 h-10 bg-emerald-600 rounded-full z-10 transition-all duration-300 before:content-none flex items-center justify-center;
-  }
-
-  .program-slider .slick-prev {
-    @apply left-0 -ml-5;
-  }
-
-  .program-slider .slick-next {
-    @apply right-0 -mr-5;
-  }
-
-  .program-slider .slick-prev:hover,
-  .program-slider .slick-next:hover {
-    @apply bg-emerald-700 scale-110;
-  }
-
-  .program-slider .slick-prev:before,
-  .program-slider .slick-next:before {
-    @apply content-none;
-  }
-
-  .program-slider .slick-dots {
+  .slick-dots {
     @apply -bottom-8;
   }
 
-  .program-slider .slick-dots li button:before {
+  .slick-dots li button:before {
     @apply text-emerald-600 text-lg;
   }
 
-  .program-slider .slick-dots li.slick-active button:before {
+  .slick-dots li.slick-active button:before {
     @apply text-emerald-700;
   }
 
@@ -127,7 +98,7 @@
   /* Mobile optimizations */
   @media (max-width: 640px) {
     .section-title {
-      @apply text-2xl after:w-16;
+      @apply text-4xl after:w-16;
     }
 
     .btn {
@@ -136,15 +107,6 @@
 
     .card {
       @apply mx-0;
-    }
-
-    .program-slider .slick-prev,
-    .program-slider .slick-next {
-      @apply w-8 h-8;
-    }
-
-    .program-slider {
-      @apply mx-auto max-w-[90%];
     }
   }
 }

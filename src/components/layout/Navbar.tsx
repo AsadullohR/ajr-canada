@@ -78,7 +78,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
               <img
                 src="/images/Ajr Islamic Foundation Logo PNG.png"
                 alt="Ajr Islamic Foundation Logo"
-                className="h-16 transition-opacity duration-300 opacity-90 hover:opacity-100"
+                className="h-12 transition-opacity duration-300 opacity-90 hover:opacity-100"
               />
             </a>
           </div>
@@ -112,7 +112,10 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`p-2 rounded-md ${textColorClass}`}
+              className={`p-2 rounded-md ${textColorClass} backdrop-blur-md transition-all duration-300`}
+              style={{
+                backgroundColor: isDarkSection ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)'
+              }}
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -123,13 +126,26 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white/95 shadow-lg animate-slide-in backdrop-blur-md">
+        <div
+          className={`md:hidden shadow-lg animate-slide-in ${
+            isDarkSection ? 'text-white' : 'text-gray-700'
+          }`}
+          style={{
+            backgroundColor: `${isDarkSection ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'} !important`,
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)'
+          } as React.CSSProperties}
+        >
           <div className="px-2 pt-2 pb-3 space-y-1">
             {navItems.map((item) => (
               <a
                 key={item}
                 href={`#${item}`}
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-emerald-50 rounded-md transition-colors duration-200"
+                className={`block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${
+                  isDarkSection
+                    ? 'text-white hover:bg-white/10'
+                    : 'text-gray-700 hover:bg-emerald-50'
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}

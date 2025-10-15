@@ -12,7 +12,7 @@ export function Contact() {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="card p-6">
+          <div className="card p-6 transform md:hover:scale-105 transition-transform duration-300">
             <div className="flex items-start space-x-4">
               <MapPin className="w-8 h-8 text-emerald-600 flex-shrink-0" />
               <div>
@@ -30,7 +30,7 @@ export function Contact() {
               </div>
             </div>
           </div>
-          <div className="card p-6">
+          <div className="card p-6 transform md:hover:scale-105 transition-transform duration-300">
             <div className="flex items-start space-x-4">
               <Mail className="w-8 h-8 text-emerald-600 flex-shrink-0" />
               <div>

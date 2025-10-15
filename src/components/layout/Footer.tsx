@@ -7,7 +7,13 @@ export function Footer() {
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-2xl font-serif font-semibold mb-4">Ajr Islamic Foundation</h3>
+            <div className="flex items-center mb-4">
+              <img
+                src="/images/Ajr Islamic Foundation Logo PNG.png"
+                alt="Ajr Islamic Foundation Logo"
+                className="h-16 mr-3"
+              />
+            </div>
             <p className="text-gray-400">Serving the community since 2021</p>
           </div>
           <div>
