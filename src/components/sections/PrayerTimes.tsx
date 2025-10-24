@@ -68,16 +68,41 @@ const getNextPrayer = (prayerTimes: PrayerTime[]): number => {
   const now = new Date();
   const torontoTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Toronto' }));
   const currentMinutes = torontoTime.getHours() * 60 + torontoTime.getMinutes();
-
+  const isFriday = torontoTime.getDay() === 5;
   const prayersWithIqama = prayerTimes.filter(prayer => prayer.iqama);
+
+  // If there are no prayers with iqama, return 0
+  if (prayersWithIqama.length === 0) {
+    return 0;
+  }
 
   for (let i = 0; i < prayersWithIqama.length; i++) {
     const prayerMinutes = convertToMinutes(prayersWithIqama[i].iqama!);
     if (prayerMinutes > currentMinutes) {
-      return prayerTimes.findIndex(p => p.name === prayersWithIqama[i].name);
+      const prayerName = prayersWithIqama[i].name;
+      // On Fridays, if the next prayer is Zuhr, highlight Jumu'ah instead
+      if (isFriday && prayerName.toLowerCase() === 'zuhr') {
+        const jumahIndex = prayerTimes.findIndex(p => p.name.toLowerCase() === 'jumah');
+        if (jumahIndex !== -1) {
+          return jumahIndex;
+        }
+      }
+
+      return prayerTimes.findIndex(p => p.name === prayerName);
     }
   }
-  return prayerTimes.findIndex(p => p.name === prayersWithIqama[0].name);
+
+  const firstPrayerName = prayersWithIqama[0].name;
+
+  // On Fridays, if wrapping around to Zuhr/Dhuhr, highlight Jumu'ah instead
+  if (isFriday && firstPrayerName.toLowerCase() === 'zuhr') {
+    const jumahIndex = prayerTimes.findIndex(p => p.name.toLowerCase() === 'jumah' || p.name.toLowerCase() === 'jumu\'ah');
+    if (jumahIndex !== -1) {
+      return jumahIndex;
+    }
+  }
+
+  return prayerTimes.findIndex(p => p.name === firstPrayerName);
 };
 
 export function PrayerTimes() {

@@ -47,16 +47,29 @@ const getTimeUntilNextPrayer = (prayerTimes: PrayerTime[]): { name: string; hour
   const now = new Date();
   const torontoTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Toronto' }));
   const currentSeconds = torontoTime.getHours() * 3600 + torontoTime.getMinutes() * 60 + torontoTime.getSeconds();
+  const isFriday = torontoTime.getDay() === 5;
 
   const prayersWithIqama = prayerTimes.filter(prayer => prayer.iqama);
+
+  if (prayersWithIqama.length === 0) return null;
 
   for (let i = 0; i < prayersWithIqama.length; i++) {
     const prayerMinutes = convertToMinutes(prayersWithIqama[i].iqama!);
     const prayerSeconds = prayerMinutes * 60;
     if (prayerSeconds > currentSeconds) {
       const secondsUntil = prayerSeconds - currentSeconds;
+      let prayerName = prayersWithIqama[i].name;
+
+      // On Fridays, if the next prayer is Zuhr/Dhuhr, show Jumu'ah instead
+      if (isFriday && prayerName.toLowerCase() === 'zuhr') {
+        const jumahPrayer = prayerTimes.find(p => p.name.toLowerCase() === 'jumah');
+        if (jumahPrayer) {
+          prayerName = jumahPrayer.name;
+        }
+      }
+
       return {
-        name: prayersWithIqama[i].name,
+        name: prayerName,
         hours: Math.floor(secondsUntil / 3600),
         minutes: Math.floor((secondsUntil % 3600) / 60),
         seconds: secondsUntil % 60
@@ -69,8 +82,18 @@ const getTimeUntilNextPrayer = (prayerTimes: PrayerTime[]): { name: string; hour
     const firstPrayerMinutes = convertToMinutes(prayersWithIqama[0].iqama!);
     const firstPrayerSeconds = firstPrayerMinutes * 60;
     const secondsUntil = (24 * 3600 - currentSeconds) + firstPrayerSeconds;
+    let prayerName = prayersWithIqama[0].name;
+
+    // On Fridays, if wrapping around to Zuhr/Dhuhr, show Jumu'ah instead
+    if (isFriday && prayerName.toLowerCase() === 'dhuhr') {
+      const jumahPrayer = prayerTimes.find(p => p.name.toLowerCase() === 'jumah' || p.name.toLowerCase() === 'jumu\'ah');
+      if (jumahPrayer) {
+        prayerName = jumahPrayer.name;
+      }
+    }
+
     return {
-      name: prayersWithIqama[0].name,
+      name: prayerName,
       hours: Math.floor(secondsUntil / 3600),
       minutes: Math.floor((secondsUntil % 3600) / 60),
       seconds: secondsUntil % 60
