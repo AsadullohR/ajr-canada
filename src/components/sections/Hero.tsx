@@ -51,7 +51,7 @@ const getTimeUntilNextPrayer = (prayerTimes: PrayerTime[]): { name: string; hour
   const prayersWithIqama = prayerTimes.filter(prayer => prayer.iqama);
 
   for (let i = 0; i < prayersWithIqama.length; i++) {
-    const prayerMinutes = convertToMinutes(prayersWithIqama[i].begins);
+    const prayerMinutes = convertToMinutes(prayersWithIqama[i].iqama!);
     const prayerSeconds = prayerMinutes * 60;
     if (prayerSeconds > currentSeconds) {
       const secondsUntil = prayerSeconds - currentSeconds;
@@ -66,7 +66,7 @@ const getTimeUntilNextPrayer = (prayerTimes: PrayerTime[]): { name: string; hour
 
   // If no prayer found today, return first prayer tomorrow
   if (prayersWithIqama.length > 0) {
-    const firstPrayerMinutes = convertToMinutes(prayersWithIqama[0].begins);
+    const firstPrayerMinutes = convertToMinutes(prayersWithIqama[0].iqama!);
     const firstPrayerSeconds = firstPrayerMinutes * 60;
     const secondsUntil = (24 * 3600 - currentSeconds) + firstPrayerSeconds;
     return {

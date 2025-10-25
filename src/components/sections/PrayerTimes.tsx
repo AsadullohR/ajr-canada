@@ -70,9 +70,9 @@ const getNextPrayer = (prayerTimes: PrayerTime[]): number => {
   const currentMinutes = torontoTime.getHours() * 60 + torontoTime.getMinutes();
 
   const prayersWithIqama = prayerTimes.filter(prayer => prayer.iqama);
-  
+
   for (let i = 0; i < prayersWithIqama.length; i++) {
-    const prayerMinutes = convertToMinutes(prayersWithIqama[i].begins);
+    const prayerMinutes = convertToMinutes(prayersWithIqama[i].iqama!);
     if (prayerMinutes > currentMinutes) {
       return prayerTimes.findIndex(p => p.name === prayersWithIqama[i].name);
     }
