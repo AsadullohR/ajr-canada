@@ -1,0 +1,31 @@
+# robots.txt for AJR Canada - Al-Bukhari Community Centre
+# https://ajrcanada.com
+
+# Allow all search engines to crawl the entire site
+User-agent: *
+Allow: /
+
+# Disallow access to build/config files and directories
+Disallow: /src/
+Disallow: /.env
+Disallow: /node_modules/
+
+# Sitemap location
+Sitemap: https://ajrcanada.com/sitemap.xml
+
+# Crawl-delay (optional - helps prevent server overload)
+# Crawl-delay: 1
+
+# Specific bot configurations
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Block bad bots (optional - uncomment if needed)
+# User-agent: AhrefsBot
+# Disallow: /
+
+# User-agent: SemrushBot
+# Disallow: /
