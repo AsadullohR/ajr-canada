@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { Hero } from '../components/sections/Hero';
+import { HeroSlideshow } from '../components/sections/HeroSlideshow';
 import { PrayerTimes } from '../components/sections/PrayerTimes';
 import { Programs } from '../components/sections/Programs';
 import { Services } from '../components/sections/Services';
@@ -41,7 +41,7 @@ export function HomePage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar isScrolled={isScrolled} activeSection={activeSection} />
       <main className="space-y-0">
-        <Hero />
+        <HeroSlideshow />
         <PrayerTimes />
         <Programs />
         <Services />

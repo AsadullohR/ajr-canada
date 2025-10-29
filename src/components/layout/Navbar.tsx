@@ -58,22 +58,23 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
 
   let navBgClass = 'bg-transparent';
   let textColorClass = 'text-white';
-  let blurClass = '';
+  let blurClass = 'md:backdrop-blur-md';
 
   if (!isScrolled) {
-    // At the very top - completely transparent
-    navBgClass = 'bg-transparent';
+    // At the very top - transparent with blur (desktop only)
+    navBgClass = 'bg-black/40 md:bg-black/20';
     textColorClass = 'text-white';
+    blurClass = 'md:backdrop-blur-md';
   } else if (isDarkSection) {
     // Scrolling through dark sections (home, prayer-times) - dark transparent blur
-    navBgClass = 'bg-black/30 shadow-md';
+    navBgClass = 'bg-black/50 md:bg-black/30 shadow-md';
     textColorClass = 'text-white';
-    blurClass = 'backdrop-blur-md';
+    blurClass = 'md:backdrop-blur-md';
   } else if (isLightSection) {
     // Scrolling through light sections (programs+) - white transparent blur
-    navBgClass = 'bg-white/70 shadow-md';
+    navBgClass = 'bg-white/90 md:bg-white/70 shadow-md';
     textColorClass = 'text-gray-700';
-    blurClass = 'backdrop-blur-md';
+    blurClass = 'md:backdrop-blur-md';
   }
 
   return (
@@ -83,7 +84,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
       <div className="px-4 md:px-8 lg:px-12 xl:px-16">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
-            <a href="#home" className="flex items-center">
+            <a href="/" className="flex items-center">
               <img
                 src="/images/Ajr Islamic Foundation Logo PNG.png"
                 alt="Ajr Islamic Foundation Logo"
