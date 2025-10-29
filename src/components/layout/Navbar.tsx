@@ -9,11 +9,17 @@ interface NavbarProps {
 export function Navbar({ isScrolled, activeSection }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const toggleMenu = () => {
+    setIsMenuOpen(prev => !prev);
+  };
+
   // Close mobile menu when clicking outside or on escape key
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (isMenuOpen && !target.closest('nav')) {
+      const menuButton = document.querySelector('[aria-label="Toggle menu"]');
+      // Don't close if clicking the menu button itself
+      if (isMenuOpen && !target.closest('nav') && !menuButton?.contains(target)) {
         setIsMenuOpen(false);
       }
     };
@@ -25,7 +31,10 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
     };
 
     if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      // Use a small delay to prevent immediate closing
+      setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 100);
       document.addEventListener('keydown', handleEscapeKey);
     }
 
@@ -71,7 +80,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
     <nav
       className={`fixed w-full z-50 transition-all duration-300 ${blurClass} ${navBgClass}`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 md:px-8 lg:px-12 xl:px-16">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
             <a href="#home" className="flex items-center">
@@ -111,12 +120,14 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={toggleMenu}
+              type="button"
               className={`p-2 rounded-md ${textColorClass} backdrop-blur-md transition-all duration-300`}
               style={{
                 backgroundColor: isDarkSection ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)'
               }}
               aria-label="Toggle menu"
+              aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>

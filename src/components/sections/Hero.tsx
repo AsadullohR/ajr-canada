@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface PrayerTime {
   name: string;
@@ -179,31 +179,141 @@ export function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative h-full flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl animate-fade-in space-y-12 md:space-y-16">
+      <div className="relative h-full flex items-center justify-center">
+        <div className="px-4 md:px-8 lg:px-12 xl:px-16 w-full">
+          <motion.div
+            className="max-w-3xl mx-auto text-left md:text-center space-y-12 md:space-y-16"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.15,
+                  delayChildren: 0.2
+                }
+              }
+            }}
+          >
             <div className="space-y-10 md:space-y-12">
-              <div className="inline-block">
-                <h1 className="text-5xl lg:text-6xl xl:text-7xl font-serif font-semibold tracking-tight text-white">
-                  Welcome to<br />
-                  <span className="text-emerald-400 relative">
-                    Al-Bukhari Community Centre
-                    <svg className="absolute -bottom-4 left-0 w-full" viewBox="0 0 200 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 5.5C47.6667 2.16667 154.4 -2.4 199 6" stroke="#059669" strokeWidth="2"/>
+              <motion.div
+                className="inline-block"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.15,
+                      delayChildren: 0.2
+                    }
+                  }
+                }}
+              >
+                <h1 className="font-serif font-semibold tracking-tight text-white flex flex-col items-start md:items-center">
+                  <motion.span
+                    className="text-3xl  md:text-4xl  text-emerald-100"
+                    variants={{
+                      hidden: { opacity: 0, y: 30 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 1.2,
+                          ease: [0.22, 1, 0.36, 1]
+                        }
+                      }
+                    }}
+                  >
+                    Welcome to
+                  </motion.span>
+                  <motion.span
+                    className="text-5xl  md:text-6xl xl:text-8xl text-emerald-400 inline-block mt-2"
+                    variants={{
+                      hidden: { opacity: 0, y: 30 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 1.2,
+                          ease: [0.22, 1, 0.36, 1]
+                        }
+                      }
+                    }}
+                  >
+                    Al-Bukhari
+                  </motion.span>
+                  <motion.span
+                    className="text-3xl md:text-4xl  text-emerald-100 relative inline-block mt-2"
+                    variants={{
+                      hidden: { opacity: 0, y: 30 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 1.2,
+                          ease: [0.22, 1, 0.36, 1]
+                        }
+                      }
+                    }}
+                  >
+                    Community Centre
+                    <svg
+                      className="absolute -bottom-4 left-0 w-full"
+                      viewBox="0 0 200 8"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <motion.path
+                        d="M1 5.5C47.6667 2.16667 154.4 -2.4 199 6"
+                        stroke="#059669"
+                        strokeWidth="2"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 1 }}
+                        transition={{ duration: 2, delay: 1.2, ease: "easeInOut" }}
+                      />
                     </svg>
-                  </span>
+                  </motion.span>
                 </h1>
-              </div>
-              <p className="text-lg md:text-xl text-emerald-50 max-w-2xl leading-relaxed italic font-serif">
+              </motion.div>
+              <motion.p
+                className="italic text-lg md:text-xl text-emerald-50 max-w-2xl md:mx-auto leading-relaxed font-serif"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: {
+                      duration: 1.2,
+                      ease: [0.22, 1, 0.36, 1]
+                    }
+                  }
+                }}
+              >
                 "Whatever you spend in good is for yourselves, and your reward is with Allah." - Quran 2:272
-              </p>
+              </motion.p>
             </div>
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+            <motion.div
+              className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 justify-start md:justify-center"
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: 1.2,
+                    ease: [0.22, 1, 0.36, 1]
+                  }
+                }
+              }}
+            >
               <a
                 href="https://app.irm.io/ajrcanada.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative inline-flex items-center justify-center px-10 py-5 text-xl font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(251,146,60,0.8)] hover:scale-105 active:scale-95"
+                className="group relative inline-flex items-center justify-center px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(251,146,60,0.8)] hover:scale-105 active:scale-95"
               >
                 <span className="relative z-10">
                   Donate Now
@@ -214,7 +324,7 @@ export function Hero() {
               {countdown ? (
                 <a
                   href="#prayer-times"
-                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:scale-105 active:scale-95"
+                  className="group relative inline-flex items-center justify-center px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-semibold text-white bg-transparent border-2 border-emerald-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:scale-105 active:scale-95"
                   aria-label="Time until next prayer"
                 >
                   <span className="relative z-10 flex items-center gap-2">
@@ -222,18 +332,18 @@ export function Hero() {
                       {countdown.name}: {countdown.hours > 0 && `${countdown.hours}h `}{countdown.minutes}m {countdown.seconds}s
                     </span>
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-teal-600 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </a>
               ) : (
                 <button
-                  className="px-8 py-4 text-lg font-semibold text-emerald-300 bg-emerald-950/50 border border-emerald-700/50 rounded-lg cursor-not-allowed opacity-60"
+                  className="px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-semibold text-emerald-300 bg-emerald-950/50 border border-emerald-700/50 rounded-lg cursor-not-allowed opacity-60"
                   disabled
                 >
                   Loading prayer times...
                 </button>
               )}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>
