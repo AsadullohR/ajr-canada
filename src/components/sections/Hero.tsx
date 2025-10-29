@@ -166,7 +166,7 @@ export function Hero() {
   return (
     <section id="home" className="relative h-screen overflow-hidden">
       {/* YouTube Video Background */}
-      <div className="absolute inset-0 w-full h-full">
+      <div className="absolute inset-0 w-full h-full pointer-events-none">
         <iframe
           className="absolute top-1/2 left-1/2 w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] -translate-x-1/2 -translate-y-1/2"
           src="https://www.youtube.com/embed/zBTjOxJy8w8?autoplay=1&mute=1&loop=1&playlist=zBTjOxJy8w8&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
@@ -197,31 +197,33 @@ export function Hero() {
             }}
           >
             <div className="space-y-10 md:space-y-12">
-              <motion.div
-                className="inline-block"
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  hidden: { opacity: 0 },
-                  visible: {
-                    opacity: 1,
-                    transition: {
-                      staggerChildren: 0.15,
-                      delayChildren: 0.2
-                    }
-                  }
-                }}
-              >
+              <div className="inline-block">
                 <h1 className="font-serif font-semibold tracking-tight text-white flex flex-col items-start md:items-center">
                   <motion.span
-                    className="text-3xl  md:text-4xl  text-emerald-100"
+                    className="text-2xl md:text-3xl mb-2"
                     variants={{
                       hidden: { opacity: 0, y: 30 },
                       visible: {
                         opacity: 1,
                         y: 0,
                         transition: {
-                          duration: 1.2,
+                          duration: 0.8,
+                          ease: [0.22, 1, 0.36, 1]
+                        }
+                      }
+                    }}
+                  >
+                    ٱلسَّلَامُ عَلَيْكُمْ
+                  </motion.span>
+                  <motion.span
+                    className="text-3xl  md:text-4xl "
+                    variants={{
+                      hidden: { opacity: 0, y: 30 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 0.8,
                           ease: [0.22, 1, 0.36, 1]
                         }
                       }
@@ -237,7 +239,7 @@ export function Hero() {
                         opacity: 1,
                         y: 0,
                         transition: {
-                          duration: 1.2,
+                          duration: 0.8,
                           ease: [0.22, 1, 0.36, 1]
                         }
                       }
@@ -246,38 +248,38 @@ export function Hero() {
                     Al-Bukhari
                   </motion.span>
                   <motion.span
-                    className="text-3xl md:text-4xl  text-emerald-100 relative inline-block mt-2"
+                    className="text-3xl md:text-4xl   relative inline-block mt-2"
                     variants={{
                       hidden: { opacity: 0, y: 30 },
                       visible: {
                         opacity: 1,
                         y: 0,
                         transition: {
-                          duration: 1.2,
+                          duration: 0.8,
                           ease: [0.22, 1, 0.36, 1]
                         }
                       }
                     }}
                   >
                     Community Centre
-                    <svg
+                    <motion.svg
                       className="absolute -bottom-4 left-0 w-full"
                       viewBox="0 0 200 8"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: 1, opacity: 1 }}
+                      transition={{ duration: 1.5, delay: 1.3, ease: "easeInOut" }}
                     >
-                      <motion.path
+                      <path
                         d="M1 5.5C47.6667 2.16667 154.4 -2.4 199 6"
                         stroke="#059669"
                         strokeWidth="2"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 2, delay: 1.2, ease: "easeInOut" }}
                       />
-                    </svg>
+                    </motion.svg>
                   </motion.span>
                 </h1>
-              </motion.div>
+              </div>
               <motion.p
                 className="italic text-lg md:text-xl text-emerald-50 max-w-2xl md:mx-auto leading-relaxed font-serif"
                 variants={{
@@ -286,7 +288,7 @@ export function Hero() {
                     opacity: 1,
                     y: 0,
                     transition: {
-                      duration: 1.2,
+                      duration: 0.8,
                       ease: [0.22, 1, 0.36, 1]
                     }
                   }
@@ -298,34 +300,53 @@ export function Hero() {
             <motion.div
               className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 justify-start md:justify-center"
               variants={{
-                hidden: { opacity: 0, y: 30 },
+                hidden: { opacity: 0 },
                 visible: {
                   opacity: 1,
-                  y: 0,
                   transition: {
-                    duration: 1.2,
-                    ease: [0.22, 1, 0.36, 1]
+                    staggerChildren: 0.15
                   }
                 }
               }}
             >
-              <a
+              <motion.a
                 href="https://app.irm.io/ajrcanada.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative inline-flex items-center justify-center px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(251,146,60,0.8)] hover:scale-105 active:scale-95"
+                variants={{
+                  hidden: { opacity: 0},
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: {
+                      duration: 0.8,
+                      ease: [0.22, 1, 0.36, 1]
+                    }
+                  }
+                }}
               >
                 <span className="relative z-10">
                   Donate Now
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-600 rounded-lg blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
-              </a>
+              </motion.a>
               {countdown ? (
-                <a
+                <motion.a
                   href="#prayer-times"
                   className="group relative inline-flex items-center justify-center px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-semibold text-white bg-transparent border-2 border-emerald-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:scale-105 active:scale-95"
                   aria-label="Time until next prayer"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        duration: 0.8,
+                        ease: [0.22, 1, 0.36, 1]
+                      }
+                    }
+                  }}
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     <span className="tracking-wide">
@@ -333,14 +354,24 @@ export function Hero() {
                     </span>
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </a>
+                </motion.a>
               ) : (
-                <button
-                  className="px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-semibold text-emerald-300 bg-emerald-950/50 border border-emerald-700/50 rounded-lg cursor-not-allowed opacity-60"
+                <motion.button
+                  className="px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-semibold  bg-emerald-950/50 border border-emerald-700/50 rounded-lg cursor-not-allowed opacity-60"
                   disabled
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        duration: 0.8,
+                        ease: [0.22, 1, 0.36, 1]
+                      }
+                    }
+                  }}
                 >
                   Loading prayer times...
-                </button>
+                </motion.button>
               )}
             </motion.div>
           </motion.div>
