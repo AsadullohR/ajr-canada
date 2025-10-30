@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 interface NavbarProps {
   isScrolled: boolean;
@@ -55,6 +56,8 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
   // Determine navbar background based on section
   const isLightSection = ['programs', 'services', 'contact'].includes(activeSection);
   const isDarkSection = ['home', 'prayer-times'].includes(activeSection);
+  // Default to dark section for unknown sections (like event pages)
+  const isUnknownSection = !isLightSection && !isDarkSection;
 
   let navBgClass = 'bg-transparent';
   let textColorClass = 'text-white';
@@ -65,8 +68,8 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
     navBgClass = 'bg-transparent';
     textColorClass = 'text-white';
     blurClass = '';
-  } else if (isDarkSection) {
-    // Scrolling through dark sections (home, prayer-times) - glassy dark blur
+  } else if (isDarkSection || isUnknownSection) {
+    // Scrolling through dark sections (home, prayer-times, event pages) - glassy dark blur
     navBgClass = 'bg-black/30 shadow-lg';
     textColorClass = 'text-white';
     blurClass = 'backdrop-blur-lg';
@@ -84,13 +87,13 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
       <div className="px-4 md:px-8 lg:px-12 xl:px-16">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
-            <a href="/" className="flex items-center">
+            <Link to="/" className="flex items-center">
               <img
                 src="/images/Ajr Islamic Foundation Logo PNG.png"
                 alt="Ajr Islamic Foundation Logo"
                 className="h-12 transition-opacity duration-300 opacity-90 hover:opacity-100"
               />
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Donate Button - Center */}
@@ -144,7 +147,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
               type="button"
               className={`p-2 rounded-md ${textColorClass} backdrop-blur-md transition-all duration-300`}
               style={{
-                backgroundColor: isDarkSection ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)'
+                backgroundColor: (isDarkSection || isUnknownSection) ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)'
               }}
               aria-label="Toggle menu"
               aria-expanded={isMenuOpen}
@@ -159,10 +162,10 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
       {isMenuOpen && (
         <div
           className={`md:hidden shadow-lg animate-slide-in ${
-            isDarkSection ? 'text-white' : 'text-gray-700'
+            (isDarkSection || isUnknownSection) ? 'text-white' : 'text-gray-700'
           }`}
           style={{
-            backgroundColor: `${isDarkSection ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'} !important`,
+            backgroundColor: `${(isDarkSection || isUnknownSection) ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'} !important`,
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)'
           } as React.CSSProperties}
@@ -173,7 +176,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                 key={item}
                 href={`/#${item}`}
                 className={`block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 whitespace-nowrap ${
-                  isDarkSection
+                  (isDarkSection || isUnknownSection)
                     ? 'text-white hover:bg-white/10'
                     : 'text-gray-700 hover:bg-emerald-50'
                 }`}
