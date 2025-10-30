@@ -68,7 +68,6 @@ export async function fetchFeaturedEvents(): Promise<EventsResponse> {
     });
 
     const url = `${STRAPI_URL}/api/events?${queryString}`;
-    console.log('Fetching featured events from:', url);
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -92,7 +91,6 @@ export async function fetchFeaturedEvents(): Promise<EventsResponse> {
     }
 
     const data: EventsResponse = await response.json();
-    console.log('Fetched featured events:', data.data.length);
     return data;
   } catch (error) {
     console.error('Error fetching featured events:', error);
@@ -167,7 +165,6 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
     });
 
     const url = `${STRAPI_URL}/api/events?${queryString}`;
-    console.log('Fetching event by slug:', url);
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
