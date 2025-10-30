@@ -58,23 +58,23 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
 
   let navBgClass = 'bg-transparent';
   let textColorClass = 'text-white';
-  let blurClass = 'md:backdrop-blur-md';
+  let blurClass = 'backdrop-blur-md';
 
   if (!isScrolled) {
-    // At the very top - transparent with blur (desktop only)
-    navBgClass = 'bg-black/40 md:bg-black/20';
+    // At the very top - fully transparent
+    navBgClass = 'bg-transparent';
     textColorClass = 'text-white';
-    blurClass = 'md:backdrop-blur-md';
+    blurClass = '';
   } else if (isDarkSection) {
-    // Scrolling through dark sections (home, prayer-times) - dark transparent blur
-    navBgClass = 'bg-black/50 md:bg-black/30 shadow-md';
+    // Scrolling through dark sections (home, prayer-times) - glassy dark blur
+    navBgClass = 'bg-black/30 shadow-lg';
     textColorClass = 'text-white';
-    blurClass = 'md:backdrop-blur-md';
+    blurClass = 'backdrop-blur-lg';
   } else if (isLightSection) {
-    // Scrolling through light sections (programs+) - white transparent blur
-    navBgClass = 'bg-white/90 md:bg-white/70 shadow-md';
+    // Scrolling through light sections (programs+) - glassy white blur
+    navBgClass = 'bg-white/60 shadow-lg';
     textColorClass = 'text-gray-700';
-    blurClass = 'md:backdrop-blur-md';
+    blurClass = 'backdrop-blur-lg';
   }
 
   return (
@@ -111,7 +111,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                 href="https://app.irm.io/ajrcanada.com" 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-secondary ml-4 transform hover:scale-105 transition-transform duration-300"
+                className="btn btn-secondary "
               >
                 Donate
               </a>

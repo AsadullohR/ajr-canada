@@ -114,6 +114,7 @@ export function HeroSlideshow() {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [countdown, setCountdown] = useState<{ name: string; hours: number; minutes: number; seconds: number } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Fetch prayer times
   useEffect(() => {
@@ -196,6 +197,8 @@ export function HeroSlideshow() {
 
   // Progress bar animation
   useEffect(() => {
+    if (isPaused) return;
+
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
@@ -206,14 +209,14 @@ export function HeroSlideshow() {
     }, 50);
 
     return () => clearInterval(progressInterval);
-  }, []);
+  }, [isPaused]);
 
   // Auto-advance when progress reaches 100%
   useEffect(() => {
-    if (progress >= 100) {
+    if (!isPaused && progress >= 100) {
       nextSlide();
     }
-  }, [progress, nextSlide]);
+  }, [progress, nextSlide, isPaused]);
 
   // Close modal on Escape key
   useEffect(() => {
@@ -270,7 +273,6 @@ export function HeroSlideshow() {
                 src="https://www.youtube.com/embed/zBTjOxJy8w8?autoplay=1&mute=1&loop=1&playlist=zBTjOxJy8w8&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
                 title="Hero Background Video"
                 allow="autoplay; encrypted-media"
-                frameBorder="0"
               ></iframe>
               <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-900/85 to-gray-950/90"></div>
               <div className="absolute inset-0 islamic-pattern opacity-30"></div>
@@ -279,9 +281,29 @@ export function HeroSlideshow() {
         </AnimatePresence>
       )}
 
-      {/* Slide indicators */}
+      {/* Slide indicators with pause button */}
       {slides.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex gap-3">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
+          {/* Pause/Play Button */}
+          <button
+            onClick={() => setIsPaused(!isPaused)}
+            className="w-8 h-8 rounded-full bg-black border-2 border-emerald-500 hover:border-emerald-400 transition-all duration-300 flex items-center justify-center hover:scale-110"
+            aria-label={isPaused ? 'Play slideshow' : 'Pause slideshow'}
+          >
+            {isPaused ? (
+              // Play icon
+              <svg className="w-4 h-4 text-emerald-400 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            ) : (
+              // Pause icon
+              <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+              </svg>
+            )}
+          </button>
+
+          {/* Slide number buttons */}
           {slides.map((_, index) => (
             <button
               key={index}
@@ -330,7 +352,7 @@ export function HeroSlideshow() {
                 <div className="max-w-3xl mx-auto text-left md:text-center space-y-12 md:space-y-16">
                   <div className="space-y-10 md:space-y-12">
                     <div className="inline-block">
-                      <h1 className="font-serif font-semibold tracking-tight text-white flex flex-col items-start md:items-center">
+                      <h1 className="font-serif font-semibold tracking-tight text-white flex flex-col items-center md:items-start">
                         <motion.span
                           className="text-2xl md:text-3xl mb-2"
                           initial={{ opacity: 0, y: 20 }}
@@ -340,7 +362,7 @@ export function HeroSlideshow() {
                           ٱلسَّلَامُ عَلَيْكُمْ
                         </motion.span>
                         <motion.span
-                          className="text-3xl md:text-4xl"
+                          className="text-3xl md:text-7xl"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: 0.2 }}
@@ -348,7 +370,7 @@ export function HeroSlideshow() {
                           Welcome to
                         </motion.span>
                         <motion.span
-                          className="text-5xl md:text-6xl xl:text-8xl text-emerald-400 inline-block mt-2"
+                          className="text-3xl md:text-7xl text-emerald-400 inline-block mt-2"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: 0.3 }}
@@ -356,14 +378,14 @@ export function HeroSlideshow() {
                           Al-Bukhari
                         </motion.span>
                         <motion.span
-                          className="text-3xl md:text-4xl relative inline-block mt-2 pb-6"
+                          className="text-3xl md:text-7xl text-emerald-400 relative inline-block mt-2 pb-6"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: 0.4 }}
                         >
                           Community Centre
                           <svg
-                            className="absolute -bottom-4 left-0 w-full"
+                            className="absolute -bottom-1 left-0 w-full"
                             viewBox="0 0 200 8"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -383,18 +405,18 @@ export function HeroSlideshow() {
                       </h1>
                     </div>
                     <motion.p
-                      className="italic text-lg md:text-xl text-emerald-50 max-w-2xl md:mx-auto leading-relaxed font-serif"
+                      className="italic text-base md:text-xl text-emerald-50 max-w-2xl md:mx-auto leading-relaxed font-serif text-center md:text-left"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.5 }}
                     >
-                      "Whatever you spend in good is for yourselves, and your reward is with Allah." - Quran 2:272
+                      "Whoever builds a mosque for Allah, Allah will build for him likewise in Paradise" - Sahih al-Bukhari & Sahih Muslim
                     </motion.p>
                   </div>
 
                   {/* Action Buttons for Default Slide */}
                   <motion.div
-                    className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 justify-start md:justify-center"
+                    className="flex flex-col sm:flex-row justify-center md:justify-start gap-4 [&>*]:w-full sm:[&>*]:w-auto sm:[&>*]:min-w-[240px]"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.6 }}
@@ -418,12 +440,9 @@ export function HeroSlideshow() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        <span className="relative z-10 flex items-center gap-2">
-                          <span className="tracking-wide">
-                            {countdown.name}: {countdown.hours > 0 && `${countdown.hours}h `}{countdown.minutes}m {countdown.seconds}s
-                          </span>
+                        <span className="flex items-center gap-2 tracking-wide">
+                          {countdown.name}: {countdown.hours > 0 && `${countdown.hours}h `}{countdown.minutes}m {countdown.seconds}s
                         </span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       </motion.a>
                     ) : (
                       <motion.button
@@ -437,109 +456,141 @@ export function HeroSlideshow() {
                 </div>
               </div>
             ) : (
-              // Event slide - split layout (desktop: image left, content right | mobile: stacked)
-              <div className="h-full w-full flex flex-col lg:grid lg:grid-cols-2">
-                {/* Content Section - Right on desktop, Bottom on mobile */}
-                <div className="flex-1 flex items-start lg:items-center justify-center px-4 pt-6 pb-8 md:px-12 md:py-12 lg:px-16 lg:py-0 bg-gradient-to-br from-gray-900 via-gray-950 to-black order-2 lg:order-2">
-                  <div className="max-w-xl space-y-3 md:space-y-6 lg:space-y-8">
-                  <motion.div
-                    className="inline-block px-3 py-1.5 md:px-4 md:py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-full"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <span className="text-emerald-300 text-xs md:text-sm font-semibold uppercase tracking-wider">
-                      {eventData?.category.replace('-', ' ')}
-                    </span>
-                  </motion.div>
+              // Event slide - centered layout similar to welcome section
+              <div className="h-full w-full relative">
+                {/* Background with pattern */}
+                <div className="absolute inset-0 w-full h-full">
+                  <div
+                    className="absolute inset-0 w-full h-full"
+                    style={{
+                      backgroundImage: 'url(/images/pattern_background.png)',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  ></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-950/95 via-gray-900/90 to-gray-950/95"></div>
+                </div>
 
-                  <h2 className="font-serif font-bold text-2xl md:text-4xl lg:text-5xl xl:text-7xl text-white leading-tight">
-                    {eventData?.title}
-                  </h2>
-
-                  <p className="text-sm md:text-lg lg:text-xl text-emerald-50 leading-relaxed">
-                    {eventData?.description}
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row items-start gap-2 md:gap-4 text-emerald-100">
-                    <div className="flex items-center gap-1.5 md:gap-2">
-                      <svg className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-xs md:text-sm">
-                        {eventData && formatEventDate(eventData.eventDate, eventData.eventTime)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 md:gap-2">
-                      <svg className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span className="text-xs md:text-sm">{eventData?.location}</span>
-                    </div>
-                  </div>
-
-                    {/* Event Action Buttons */}
+                {/* Content */}
+                <div className="relative h-full flex items-center justify-center px-4 md:px-8 lg:px-12 xl:px-16">
+                  <div className="max-w-4xl mx-auto text-center space-y-8 md:space-y-12">
+                    {/* Category Badge */}
                     <motion.div
-                      className="flex flex-wrap gap-2 md:gap-3"
+                      className="inline-block px-4 py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-full"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.6, delay: 0.1 }}
+                    >
+                      <span className="text-emerald-300 text-sm md:text-base font-semibold uppercase tracking-wider">
+                        {eventData?.category.replace('-', ' ')}
+                      </span>
+                    </motion.div>
+
+                    {/* Event Title */}
+                    <motion.h2
+                      className="font-serif font-semibold text-4xl md:text-6xl lg:text-7xl text-emerald-400 leading-tight"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.2 }}
+                    >
+                      {eventData?.title}
+                    </motion.h2>
+
+                    {/* Event Poster - Clickable */}
+                    {fullThumbnailUrl && (
+                      <motion.div
+                        className="relative inline-block"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                      >
+                        <button
+                          onClick={() => setIsModalOpen(true)}
+                          className="relative group block max-w-md mx-auto overflow-hidden rounded-xl shadow-2xl cursor-pointer"
+                        >
+                          <img
+                            src={fullThumbnailUrl}
+                            alt={eventData?.title || 'Event'}
+                            className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                          {/* Magnifying glass overlay */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100 bg-white/20 backdrop-blur-sm rounded-full p-4 shadow-lg">
+                              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                              </svg>
+                            </div>
+                          </div>
+                        </button>
+                      </motion.div>
+                    )}
+
+                    {/* Event Description */}
+                    <motion.p
+                      className="italic text-lg md:text-xl text-emerald-50 max-w-2xl mx-auto leading-relaxed font-serif"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.4 }}
+                    >
+                      {eventData?.description}
+                    </motion.p>
+
+                    {/* Event Details */}
+                    <motion.div
+                      className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 text-emerald-100"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.5 }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-base md:text-lg">
+                          {eventData && formatEventDate(eventData.eventDate, eventData.eventTime)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-base md:text-lg">{eventData?.location}</span>
+                      </div>
+                    </motion.div>
+
+                    {/* Event Action Buttons */}
+                    <motion.div
+                      className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 justify-center"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.6 }}
                     >
                       {eventData?.registrationLink && (
                         <motion.a
                           href={eventData.registrationLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="group relative inline-flex items-center justify-center px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 text-sm md:text-base font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(251,146,60,0.8)] hover:scale-105 active:scale-95"
+                          className="btn btn-primary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          <span className="relative z-10">Register Now</span>
-                          <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <span>Register Now</span>
                         </motion.a>
                       )}
                       {eventData?.slug && (
                         <motion.a
                           href={`/${eventData.slug}`}
-                          className="group relative inline-flex items-center justify-center px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 text-sm md:text-base font-semibold text-white bg-transparent border-2 border-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
+                          className="btn btn-secondary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          <span className="relative z-10">Learn More</span>
-                          <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <span>Learn More</span>
                         </motion.a>
                       )}
                     </motion.div>
                   </div>
                 </div>
-
-                {/* Image Section - Left on desktop, Top on mobile (below navbar) */}
-                {fullThumbnailUrl && (
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="relative h-[50vh] md:h-[60vh] lg:h-full w-full order-1 lg:order-1 overflow-hidden cursor-pointer group"
-                  >
-                    <motion.img
-                      src={fullThumbnailUrl}
-                      alt={eventData?.title || 'Event'}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      initial={{ opacity: 0.8, scale: 1.02 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 1.2, ease: "easeOut" }}
-                    />
-                    {/* Decorative gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-gray-950/50 via-transparent to-transparent"></div>
-                    {/* Click indicator - Always visible on mobile, hover on desktop */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-                      <div className="opacity-60 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/30 backdrop-blur-sm rounded-full p-3 md:p-4 shadow-lg">
-                        <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </button>
-                )}
               </div>
             )}
           </motion.div>
