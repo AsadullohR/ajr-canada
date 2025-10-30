@@ -617,9 +617,38 @@ export function HeroSlideshow() {
                           {eventData?.description}
                         </motion.p>
 
-                        {/* Event Details */}
+                        {/* Poster Image - Mobile Only */}
+                        {fullThumbnailUrl && (
+                          <motion.div
+                            className="lg:hidden relative flex items-center justify-center"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.35 }}
+                          >
+                            <button
+                              onClick={() => setIsModalOpen(true)}
+                              className="relative group overflow-hidden rounded-xl shadow-2xl cursor-pointer max-w-sm mx-auto"
+                            >
+                              <img
+                                src={fullThumbnailUrl}
+                                alt={eventData?.title || 'Event'}
+                                className="w-full h-auto max-h-64 object-contain transition-transform duration-500 group-hover:scale-105"
+                              />
+                              {/* Magnifying glass overlay */}
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100 bg-white/20 backdrop-blur-sm rounded-full p-4 shadow-lg">
+                                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </button>
+                          </motion.div>
+                        )}
+
+                        {/* Event Details - Hidden on Mobile */}
                         <motion.div
-                          className="grid grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 text-emerald-100"
+                          className="hidden lg:grid grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 text-emerald-100"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: 0.4 }}
