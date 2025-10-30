@@ -46,7 +46,6 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
   }, [isMenuOpen]);
 
   const navItems = [
-    'home',
     'prayer-times',
     'programs',
     'services',
@@ -119,8 +118,8 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
               {navItems.map((item) => (
                 <a
                   key={item}
-                  href={`#${item}`}
-                  className={`nav-link ${textColorClass} ${
+                  href={`/#${item}`}
+                  className={`nav-link whitespace-nowrap ${textColorClass} ${
                     activeSection === item ? 'nav-link-active' : ''
                   }`}
                 >
@@ -172,8 +171,8 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
             {navItems.map((item) => (
               <a
                 key={item}
-                href={`#${item}`}
-                className={`block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${
+                href={`/#${item}`}
+                className={`block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 whitespace-nowrap ${
                   isDarkSection
                     ? 'text-white hover:bg-white/10'
                     : 'text-gray-700 hover:bg-emerald-50'

@@ -3,6 +3,7 @@ import { useParams, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
+import { Breadcrumb } from '../components/common/Breadcrumb';
 import { fetchEventBySlug } from '../services/strapi';
 import { Event } from '../types/event';
 
@@ -69,43 +70,45 @@ export function EventDetailPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar isScrolled={isScrolled} activeSection="" />
 
-      <main className=" pb-16">
-        {/* Hero Image */}
-        {fullThumbnailUrl && (
-          <div className="relative h-96 md:h-[500px] w-full overflow-hidden bg-gray-950">
-            <img
-              src={fullThumbnailUrl}
-              alt={event.title}
-              className="absolute inset-y-0 top-1/2 left-0 w-full h-full object-cover -translate-y-1/2"
-              style={{ objectPosition: "center center" }}
-            />
-            {/* Dark overlay - similar to main hero */}
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-900/85 to-gray-950/90"></div>
-            <div className="absolute inset-0 islamic-pattern opacity-30"></div>
+      <main className="max-w-7xl mx-auto pb-16">
+        {/* Pattern Background Hero with Title */}
+        <div className="relative w-full h-[300px] md:h-[300px] overflow-hidden bg-gray-950">
+          {/* Background Image */}
+          <img
+            src="/images/pattern_background.jpg"
+            alt="Pattern Background"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
 
-            {/* Category Badge */}
-            <div className="absolute bottom-8 left-8 z-10">
-              <div className="inline-block px-4 py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-full backdrop-blur-sm">
-                <span className="text-emerald-300 text-sm font-semibold uppercase tracking-wider">
-                  {event.category.replace('-', ' ')}
-                </span>
-              </div>
+          {/* Dark overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-950/80 via-gray-900/75 to-gray-950/80"></div>
+
+          {/* Content Container - positioned at bottom */}
+          <div className="absolute inset-0 flex flex-col justify-end px-4 md:px-8 lg:px-12 xl:px-16 pb-8 md:pb-12">
+            {/* Breadcrumb */}
+            <div className="mb-4">
+              <Breadcrumb
+                items={[
+                  { label: 'Home', href: '/' },
+                  { label: event.title }
+                ]}
+              />
             </div>
+
+            {/* Title */}
+            <h1 className="font-serif font-bold text-4xl md:text-5xl text-white leading-tight max-w-4xl">
+              {event.title}
+            </h1>
           </div>
-        )}
+        </div>
 
         {/* Content */}
-        <div className="max-w-4xl mx-auto px-4 md:px-8 py-12">
+        <div className="max-w-6xl mx-auto px-4 md:px-0 py-12">
           <motion.article
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Title */}
-            <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl text-gray-900 mb-6 leading-tight">
-              {event.title}
-            </h1>
-
             {/* Meta Information */}
             <div className="flex flex-wrap gap-6 mb-8 pb-8 border-b border-gray-200">
               <div className="flex items-center gap-2 text-gray-600">
@@ -218,9 +221,10 @@ export function EventDetailPage() {
 
               <a
                 href="/"
-                className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg overflow-hidden transition-all duration-300 hover:border-gray-400 hover:scale-105 active:scale-95"
+                className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.8)] hover:scale-105 active:scale-95"
               >
                 <span className="relative z-10">Back to Home</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-emerald-700 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </a>
             </div>
           </motion.article>

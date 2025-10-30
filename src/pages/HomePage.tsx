@@ -37,6 +37,30 @@ export function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [activeSection]);
 
+  // Handle hash navigation on mount and hash changes
+  useEffect(() => {
+    const scrollToHash = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash) {
+        // Small delay to ensure the page has rendered
+        setTimeout(() => {
+          const element = document.getElementById(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      }
+    };
+
+    // Scroll on mount if hash exists
+    scrollToHash();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', scrollToHash);
+
+    return () => window.removeEventListener('hashchange', scrollToHash);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar isScrolled={isScrolled} activeSection={activeSection} />
