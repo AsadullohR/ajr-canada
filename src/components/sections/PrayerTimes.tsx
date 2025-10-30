@@ -181,7 +181,7 @@ export function PrayerTimes() {
       </div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/20 via-transparent to-transparent"></div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="px-4 md:px-8 lg:px-12 xl:px-16 relative">
         <div className="text-center mb-16">
           <h2 className="section-title text-white mb-6">
             Prayer Times

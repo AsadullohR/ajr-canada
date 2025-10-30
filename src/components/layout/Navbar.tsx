@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface NavbarProps {
   isScrolled: boolean;
@@ -9,11 +10,17 @@ interface NavbarProps {
 export function Navbar({ isScrolled, activeSection }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const toggleMenu = () => {
+    setIsMenuOpen(prev => !prev);
+  };
+
   // Close mobile menu when clicking outside or on escape key
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (isMenuOpen && !target.closest('nav')) {
+      const menuButton = document.querySelector('[aria-label="Toggle menu"]');
+      // Don't close if clicking the menu button itself
+      if (isMenuOpen && !target.closest('nav') && !menuButton?.contains(target)) {
         setIsMenuOpen(false);
       }
     };
@@ -25,7 +32,10 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
     };
 
     if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      // Use a small delay to prevent immediate closing
+      setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 100);
       document.addEventListener('keydown', handleEscapeKey);
     }
 
@@ -36,7 +46,6 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
   }, [isMenuOpen]);
 
   const navItems = [
-    'home',
     'prayer-times',
     'programs',
     'services',
@@ -49,32 +58,33 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
 
   let navBgClass = 'bg-transparent';
   let textColorClass = 'text-white';
-  let blurClass = '';
+  let blurClass = 'backdrop-blur-md';
 
   if (!isScrolled) {
-    // At the very top - completely transparent
+    // At the very top - fully transparent
     navBgClass = 'bg-transparent';
     textColorClass = 'text-white';
+    blurClass = '';
   } else if (isDarkSection) {
-    // Scrolling through dark sections (home, prayer-times) - dark transparent blur
-    navBgClass = 'bg-black/30 shadow-md';
+    // Scrolling through dark sections (home, prayer-times) - glassy dark blur
+    navBgClass = 'bg-black/30 shadow-lg';
     textColorClass = 'text-white';
-    blurClass = 'backdrop-blur-md';
+    blurClass = 'backdrop-blur-lg';
   } else if (isLightSection) {
-    // Scrolling through light sections (programs+) - white transparent blur
-    navBgClass = 'bg-white/70 shadow-md';
+    // Scrolling through light sections (programs+) - glassy white blur
+    navBgClass = 'bg-white/60 shadow-lg';
     textColorClass = 'text-gray-700';
-    blurClass = 'backdrop-blur-md';
+    blurClass = 'backdrop-blur-lg';
   }
 
   return (
     <nav
       className={`fixed w-full z-50 transition-all duration-300 ${blurClass} ${navBgClass}`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 md:px-8 lg:px-12 xl:px-16">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center">
-            <a href="#home" className="flex items-center">
+            <a href="/" className="flex items-center">
               <img
                 src="/images/Ajr Islamic Foundation Logo PNG.png"
                 alt="Ajr Islamic Foundation Logo"
@@ -82,26 +92,45 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
               />
             </a>
           </div>
-          
+
+          {/* Mobile Donate Button - Center */}
+          <div className="md:hidden">
+            <motion.a
+              href="https://app.irm.io/ajrcanada.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 shadow-[0_0_20px_rgba(251,146,60,0.5)] hover:shadow-[0_0_30px_rgba(251,146,60,0.8)]"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2, type: "spring", stiffness: 200 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="relative z-10">Donate</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-600 rounded-lg blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+            </motion.a>
+          </div>
+
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-4">
               {navItems.map((item) => (
                 <a
                   key={item}
-                  href={`#${item}`}
-                  className={`nav-link ${textColorClass} ${
+                  href={`/#${item}`}
+                  className={`nav-link whitespace-nowrap ${textColorClass} ${
                     activeSection === item ? 'nav-link-active' : ''
                   }`}
                 >
                   {item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                 </a>
               ))}
-              <a 
-                href="https://app.irm.io/ajrcanada.com" 
+              <a
+                href="https://app.irm.io/ajrcanada.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-secondary ml-4 transform hover:scale-105 transition-transform duration-300"
+                className="block w-full text-center px-3 py-2 text-base font-medium btn btn-secondary"
               >
                 Donate
               </a>
@@ -111,12 +140,14 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={toggleMenu}
+              type="button"
               className={`p-2 rounded-md ${textColorClass} backdrop-blur-md transition-all duration-300`}
               style={{
                 backgroundColor: isDarkSection ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)'
               }}
               aria-label="Toggle menu"
+              aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -140,8 +171,8 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
             {navItems.map((item) => (
               <a
                 key={item}
-                href={`#${item}`}
-                className={`block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${
+                href={`/#${item}`}
+                className={`block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 whitespace-nowrap ${
                   isDarkSection
                     ? 'text-white hover:bg-white/10'
                     : 'text-gray-700 hover:bg-emerald-50'
@@ -151,20 +182,6 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                 {item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
               </a>
             ))}
-            {/* Move Donate button after Programs in mobile menu */}
-            {navItems.indexOf('programs') !== -1 && (
-              <div className="py-2">
-                <a
-                  href="https://app.irm.io/ajrcanada.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center px-3 py-2 text-base font-medium btn btn-secondary"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Donate
-                </a>
-              </div>
-            )}
           </div>
         </div>
       )}

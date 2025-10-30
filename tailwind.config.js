@@ -5,7 +5,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        arabic: ['Amiri', 'Noto Naskh Arabic', 'serif'],
+        serif: ['Merriweather', 'Georgia', 'serif'],
       },
       colors: {
         primary: {
