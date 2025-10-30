@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface NavbarProps {
   isScrolled: boolean;
@@ -92,7 +93,26 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
               />
             </a>
           </div>
-          
+
+          {/* Mobile Donate Button - Center */}
+          <div className="md:hidden">
+            <motion.a
+              href="https://app.irm.io/ajrcanada.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 shadow-[0_0_20px_rgba(251,146,60,0.5)] hover:shadow-[0_0_30px_rgba(251,146,60,0.8)]"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2, type: "spring", stiffness: 200 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="relative z-10">Donate</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-600 rounded-lg blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+            </motion.a>
+          </div>
+
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-4">
@@ -107,7 +127,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                   {item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                 </a>
               ))}
-              <a 
+              <a
                 href="https://app.irm.io/ajrcanada.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -163,20 +183,6 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                 {item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
               </a>
             ))}
-            {/* Move Donate button after Programs in mobile menu */}
-            {navItems.indexOf('programs') !== -1 && (
-              <div className="py-2">
-                <a
-                  href="https://app.irm.io/ajrcanada.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center px-3 py-2 text-base font-medium btn btn-secondary"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Donate
-                </a>
-              </div>
-            )}
           </div>
         </div>
       )}
