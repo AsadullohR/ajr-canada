@@ -85,19 +85,19 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
       className={`fixed w-full z-50 transition-all duration-300 ${blurClass} ${navBgClass}`}
     >
       <div className="px-4 md:px-8 lg:px-12 xl:px-16">
-        <div className="flex items-center justify-between h-20">
-          <div className="flex items-center">
+        <div className="relative flex items-center justify-between h-20">
+          <div className="flex items-center z-10">
             <Link to="/" className="flex items-center">
               <img
                 src="/images/Ajr Islamic Foundation Logo PNG.png"
                 alt="Ajr Islamic Foundation Logo"
-                className="h-12 transition-opacity duration-300 opacity-90 hover:opacity-100"
+                className="h-10 md:h-12 transition-opacity duration-300 opacity-90 hover:opacity-100"
               />
             </Link>
           </div>
 
-          {/* Mobile Donate Button - Center */}
-          <div className="md:hidden">
+          {/* Mobile Donate Button - Absolutely Centered */}
+          <div className="md:hidden absolute left-1/2 -translate-x-1/2 z-0">
             <motion.a
               href="https://app.irm.io/ajrcanada.com"
               target="_blank"
@@ -141,18 +141,18 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden z-10">
             <button
               onClick={toggleMenu}
               type="button"
-              className={`p-2 rounded-md ${textColorClass} backdrop-blur-md transition-all duration-300`}
+              className={`p-2.5 rounded-md ${textColorClass} backdrop-blur-md transition-all duration-300`}
               style={{
                 backgroundColor: (isDarkSection || isUnknownSection) ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)'
               }}
               aria-label="Toggle menu"
               aria-expanded={isMenuOpen}
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
           </div>
         </div>
@@ -170,7 +170,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
             WebkitBackdropFilter: 'blur(12px)'
           } as React.CSSProperties}
         >
-          <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="px-2 pt-2 pb-3 space-y-3">
             {navItems.map((item) => (
               <a
                 key={item}
