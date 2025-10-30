@@ -232,10 +232,10 @@ export function PrayerTimes() {
               <table className="w-full hidden md:table">
                 <thead>
                   <tr className="bg-white/10 backdrop-blur-sm border-b border-white/10">
-                    <th className="px-6 py-4 text-left text-emerald-200 font-semibold">Prayer</th>
-                    <th className="px-6 py-4 text-center text-emerald-200 font-semibold border-l border-white/10">Begins</th>
-                    <th className="px-6 py-4 text-center text-emerald-200 font-semibold border-l border-white/10">Adhan</th>
-                    <th className="px-6 py-4 text-center text-emerald-200 font-semibold border-l border-white/10">Iqama</th>
+                    <th className="px-6 py-4 text-left text-white font-semibold">Prayer</th>
+                    <th className="px-6 py-4 text-center text-white font-semibold border-l border-white/10">Begins</th>
+                    <th className="px-6 py-4 text-center text-white font-semibold border-l border-white/10">Adhan</th>
+                    <th className="px-6 py-4 text-center text-white font-semibold border-l border-white/10">Iqama</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -256,8 +256,8 @@ export function PrayerTimes() {
                           <div className={`flex items-center ${
                             isNext ? 'text-amber-200' : 'text-emerald-300'
                           }`}>
-                            <div className="mr-3">{getPrayerIcon(prayer.name)}</div>
-                            <span className="font-medium text-lg">{prayer.name}</span>
+                            <div className="mr-3 text-yellow-500">{getPrayerIcon(prayer.name)}</div>
+                            <span className="font-serif text-xl text-white">{prayer.name}</span>
                             {isNext && !isTimingOnly && (
                               <span className="ml-3 text-xs font-medium bg-amber-400/20 text-amber-100 px-2 py-1 rounded-full">
                                 Next
@@ -305,8 +305,8 @@ export function PrayerTimes() {
                         isNext ? 'text-amber-200' : 'text-emerald-300'
                       }`}>
                         <div className="flex items-center">
-                          <div className="mr-2">{getPrayerIcon(prayer.name)}</div>
-                          <span className="font-semibold text-lg">{prayer.name}</span>
+                          <div className="mr-2 text-yellow-500">{getPrayerIcon(prayer.name)}</div>
+                          <span className="font-serif text-xl text-white">{prayer.name}</span>
                         </div>
                         {isNext && !isTimingOnly && (
                           <span className="text-xs font-medium bg-amber-400/20 text-amber-100 px-2 py-1 rounded-full">
