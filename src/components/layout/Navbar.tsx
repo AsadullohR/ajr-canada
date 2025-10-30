@@ -108,10 +108,10 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                 </a>
               ))}
               <a 
-                href="https://app.irm.io/ajrcanada.com" 
+                href="https://app.irm.io/ajrcanada.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-secondary "
+                className="block w-full text-center px-3 py-2 text-base font-medium btn btn-secondary"
               >
                 Donate
               </a>

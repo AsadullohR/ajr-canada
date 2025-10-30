@@ -274,7 +274,7 @@ export function HeroSlideshow() {
                 title="Hero Background Video"
                 allow="autoplay; encrypted-media"
               ></iframe>
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-900/85 to-gray-950/90"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-950/80 via-gray-900/65 to-gray-950/80"></div>
               <div className="absolute inset-0 islamic-pattern opacity-30"></div>
             </div>
           </motion.div>
@@ -352,7 +352,7 @@ export function HeroSlideshow() {
                 <div className="max-w-3xl mx-auto text-left md:text-center space-y-12 md:space-y-16">
                   <div className="space-y-10 md:space-y-12">
                     <div className="inline-block">
-                      <h1 className="font-serif font-semibold tracking-tight text-white flex flex-col items-center md:items-start">
+                      <h1 className="font-serif font-semibold tracking-tight text-white flex flex-col items-start">
                         <motion.span
                           className="text-2xl md:text-3xl mb-2"
                           initial={{ opacity: 0, y: 20 }}
@@ -362,7 +362,7 @@ export function HeroSlideshow() {
                           ٱلسَّلَامُ عَلَيْكُمْ
                         </motion.span>
                         <motion.span
-                          className="text-3xl md:text-7xl"
+                          className="text-5xl md:text-7xl"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: 0.2 }}
@@ -370,7 +370,7 @@ export function HeroSlideshow() {
                           Welcome to
                         </motion.span>
                         <motion.span
-                          className="text-3xl md:text-7xl text-emerald-400 inline-block mt-2"
+                          className="text-5xl md:text-7xl text-emerald-400 inline-block mt-2"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: 0.3 }}
@@ -378,7 +378,7 @@ export function HeroSlideshow() {
                           Al-Bukhari
                         </motion.span>
                         <motion.span
-                          className="text-3xl md:text-7xl text-emerald-400 relative inline-block mt-2 pb-6"
+                          className="text-5xl md:text-7xl text-emerald-400 relative inline-block mt-2 pb-6"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: 0.4 }}
@@ -468,7 +468,7 @@ export function HeroSlideshow() {
                       backgroundPosition: 'center'
                     }}
                   ></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-gray-950/95 via-gray-900/90 to-gray-950/95"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-950/75 via-gray-900/80 to-gray-950/75"></div>
                 </div>
 
                 {/* Content */}
@@ -610,7 +610,7 @@ export function HeroSlideshow() {
             {/* Close button */}
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 z-[110] p-3 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-sm transition-all duration-300 group"
+              className="absolute top-4 right-4 z-[110] p-3 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-sm transition-all duration-300 group"
               aria-label="Close modal"
             >
               <svg className="w-6 h-6 md:w-8 md:h-8 text-white group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
