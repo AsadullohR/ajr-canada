@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Sun, Moon, Clock, Sunrise, Sunset } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Sun, Moon, Clock, Sunrise, Sunset } from 'lucide-react';
 
 interface PrayerTime {
   name: string;
@@ -17,22 +18,40 @@ const PRAYER_TIMES_URL = 'https://www.galaxystream.com/apps/pt.asp?uid=51&countr
 const getPrayerIcon = (name: string) => {
   switch (name.toLowerCase()) {
     case 'fajr':
-      return <Moon className="w-6 h-6" />;
+      return <Moon className="w-5 h-5 md:w-8 md:h-8" />;
     case 'sunrise':
-      return <Sunrise className="w-6 h-6" />;
+      return <Sunrise className="w-5 h-5 md:w-8 md:h-8" />;
     case 'zawal':
-      return <Sun className="w-6 h-6" />;
+      return <Sun className="w-5 h-5 md:w-8 md:h-8" />;
     case 'dhuhr':
-      return <Sun className="w-6 h-6" />;
+      return <Sun className="w-5 h-5 md:w-8 md:h-8" />;
     case 'asr':
-      return <Sun className="w-6 h-6" />;
+      return <Sun className="w-5 h-5 md:w-8 md:h-8" />;
     case 'maghrib':
-      return <Sunset className="w-6 h-6" />;
+      return <Sunset className="w-5 h-5 md:w-8 md:h-8" />;
     case 'isha':
-      return <Moon className="w-6 h-6" />;
+      return <Moon className="w-5 h-5 md:w-8 md:h-8" />;
     default:
-      return <Clock className="w-6 h-6" />;
+      return <Clock className="w-5 h-5 md:w-8 md:h-8" />;
   }
+};
+
+const formatTimeWithSmallAmPm = (timeStr: string) => {
+  if (!timeStr || timeStr === '-') return timeStr;
+  
+  // Match time format like "5:42 AM" or "12:59 PM"
+  const match = timeStr.match(/^(\d{1,2}:\d{2})\s*(AM|PM)$/i);
+  if (match) {
+    return (
+      <>
+        {match[1]}
+        <span className="text-[0.6em]"> {match[2]}</span>
+      </>
+    );
+  }
+  
+  // If no match, return as is
+  return timeStr;
 };
 
 const convertToMinutes = (timeStr: string): number => {
@@ -109,7 +128,6 @@ export function PrayerTimes() {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentDate] = useState(new Date());
   const [nextPrayerIndex, setNextPrayerIndex] = useState(0);
 
   useEffect(() => {
@@ -150,7 +168,8 @@ export function PrayerTimes() {
         setPrayerTimes(parsedTimes);
         setError(null);
       } catch (err) {
-        console.error('Error fetching prayer times:', err.message || err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error('Error fetching prayer times:', errorMessage);
         setError('Failed to load prayer times.');
         setPrayerTimes([]);
       } finally {
@@ -172,50 +191,38 @@ export function PrayerTimes() {
   }, [prayerTimes]);
 
   return (
-    <section id="prayer-times" className="py-24 relative overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900">
-      {/* Static gradient orbs */}
+    <section id="prayer-times" className="py-24 relative overflow-hidden bg-black">
+      {/* Subtle decorative elements with emerald hues */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-emerald-500/20 to-teal-600/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-20 -right-20 w-[600px] h-[600px] bg-gradient-to-tl from-green-500/15 via-emerald-600/10 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute top-1/3 -left-40 w-[400px] h-[400px] bg-gradient-to-br from-teal-400/15 to-cyan-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-emerald-600/15 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-0 w-[400px] h-[400px] bg-emerald-500/8 rounded-full blur-3xl"></div>
       </div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/20 via-transparent to-transparent"></div>
       
       <div className="px-4 md:px-8 lg:px-12 xl:px-16 relative">
-        <div className="text-center mb-16">
-          <h2 className="section-title text-white mb-6">
+        <div className="mb-16">
+          <motion.h2
+            className="text-4xl font-serif font-semibold text-white md:text-5xl mb-8 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
             Prayer Times
-          </h2>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-emerald-100">
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full">
-              <Calendar className="w-5 h-5" />
-              <span>{currentDate.toLocaleDateString('en-US', { 
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                timeZone: 'America/Toronto'
-              })}</span>
-            </div>
-            <a
-              href="https://www.google.com/maps/search/?api=1&query=1101+Finch+Ave+W+Unit+10+North+York+ON+M3J+3L6"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full hover:bg-white/20 transition-colors cursor-pointer"
-            >
-              <MapPin className="w-5 h-5" />
-              <span>1101 Finch Ave W., Unit #10</span>
-            </a>
-          </div>
+          </motion.h2>
         </div>
         
-        <div className="max-w-4xl mx-auto">
+        <div className="relative">
           {loading ? (
             <div className="text-center py-20">
               <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-500"></div>
             </div>
           ) : error ? (
-            <div className="text-center py-12">
+            <motion.div
+              className="text-center py-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
               <div className="text-red-300 mb-4">{error}</div>
               <a
                 href={PRAYER_TIMES_URL}
@@ -225,142 +232,122 @@ export function PrayerTimes() {
               >
                 View Prayer Times on Galaxy Stream
               </a>
-            </div>
+            </motion.div>
           ) : (
-            <div className="bg-white/5 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-              {/* Desktop Table View */}
-              <table className="w-full hidden md:table">
-                <thead>
-                  <tr className="bg-white/10 backdrop-blur-sm border-b border-white/10">
-                    <th className="px-6 py-4 text-left text-white font-semibold">Prayer</th>
-                    <th className="px-6 py-4 text-center text-white font-semibold border-l border-white/10">Begins</th>
-                    <th className="px-6 py-4 text-center text-white font-semibold border-l border-white/10">Adhan</th>
-                    <th className="px-6 py-4 text-center text-white font-semibold border-l border-white/10">Iqama</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {prayerTimes.map((prayer, index) => {
-                    const isNext = index === nextPrayerIndex;
-                    const isTimingOnly = !prayer.iqama;
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 md:gap-4 lg:gap-6">
+              {prayerTimes.map((prayer, index) => {
+                const isNext = index === nextPrayerIndex;
+                const isTimingOnly = !prayer.iqama;
 
-                    return (
-                      <tr
-                        key={prayer.name}
-                        className={`border-b border-white/5 transition-all duration-300 ${
-                          isNext && !isTimingOnly
-                            ? 'bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-amber-600/10 backdrop-blur-sm shadow-lg shadow-amber-500/10'
-                            : 'hover:bg-white/5 backdrop-blur-sm'
-                        }`}
-                      >
-                        <td className="px-6 py-5">
-                          <div className={`flex items-center ${
-                            isNext ? 'text-amber-200' : 'text-emerald-300'
-                          }`}>
-                            <div className="mr-3 text-yellow-500">{getPrayerIcon(prayer.name)}</div>
-                            <span className="font-serif text-xl text-white">{prayer.name}</span>
-                            {isNext && !isTimingOnly && (
-                              <span className="ml-3 text-xs font-medium bg-amber-400/20 text-amber-100 px-2 py-1 rounded-full">
-                                Next
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className={`px-6 py-5 text-center font-medium border-l border-white/10 ${
-                          isNext ? 'text-amber-100' : 'text-emerald-100'
-                        }`}>
-                          {prayer.begins}
-                        </td>
-                        <td className={`px-6 py-5 text-center font-medium border-l border-white/10 ${
-                          isNext ? 'text-amber-100' : 'text-emerald-100'
-                        }`}>
-                          {prayer.adhan || '-'}
-                        </td>
-                        <td className={`px-6 py-5 text-center font-medium border-l border-white/10 ${
-                          isNext ? 'text-amber-100' : 'text-emerald-100'
-                        }`}>
-                          {prayer.iqama || '-'}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-
-              {/* Mobile Card View */}
-              <div className="md:hidden divide-y divide-white/5">
-                {prayerTimes.map((prayer, index) => {
-                  const isNext = index === nextPrayerIndex;
-                  const isTimingOnly = !prayer.iqama;
-
-                  return (
-                    <div
-                      key={prayer.name}
-                      className={`p-4 transition-all duration-300 ${
-                        isNext && !isTimingOnly
-                          ? 'bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-amber-600/10 backdrop-blur-sm shadow-lg shadow-amber-500/10'
-                          : 'backdrop-blur-sm'
-                      }`}
-                    >
-                      <div className={`flex items-center justify-between mb-3 ${
-                        isNext ? 'text-amber-200' : 'text-emerald-300'
+                return (
+                  <motion.div
+                    key={prayer.name}
+                    className={`relative backdrop-blur-md rounded-2xl border-2 transition-all duration-300 shadow-lg hover:shadow-xl ${
+                      isNext && !isTimingOnly
+                        ? 'bg-gradient-to-br from-secondary-50 via-secondary-50 to-secondary-100 border-secondary-500 scale-105 shadow-secondary-500/30 ring-2 ring-secondary-400/50'
+                        : 'bg-gradient-to-br from-gray-900/80 via-gray-800/80 to-gray-900/80 border-emerald-500/30 hover:border-emerald-500/50'
+                    }`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 + (index * 0.1) }}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <div className="overflow-hidden rounded-2xl">
+                      {/* Header Section */}
+                      <div className={`p-2 pb-2 md:p-4 md:pb-3 ${
+                        isNext && !isTimingOnly ? 'bg-gradient-to-r from-secondary-600/10 to-secondary-600/10' : ''
                       }`}>
-                        <div className="flex items-center">
-                          <div className="mr-2 text-yellow-500">{getPrayerIcon(prayer.name)}</div>
-                          <span className="font-serif text-xl text-white">{prayer.name}</span>
+                      <div className="flex items-center justify-center gap-2 md:gap-3">
+                        <div className={isNext && !isTimingOnly ? "text-secondary-500" : "text-emerald-500"}>
+                          {getPrayerIcon(prayer.name)}
                         </div>
-                        {isNext && !isTimingOnly && (
-                          <span className="text-xs font-medium bg-amber-400/20 text-amber-100 px-2 py-1 rounded-full">
-                            Next
-                          </span>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-3 gap-3 text-center">
-                        <div>
-                          <div className="text-xs text-emerald-300/70 mb-1">Begins</div>
-                          <div className={`font-medium text-sm ${
-                            isNext ? 'text-amber-100' : 'text-emerald-100'
-                          }`}>
-                            {prayer.begins}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-emerald-300/70 mb-1">Adhan</div>
-                          <div className={`font-medium text-sm ${
-                            isNext ? 'text-amber-100' : 'text-emerald-100'
-                          }`}>
-                            {prayer.adhan || '-'}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-emerald-300/70 mb-1">Iqama</div>
-                          <div className={`font-medium text-sm ${
-                            isNext ? 'text-amber-100' : 'text-emerald-100'
-                          }`}>
-                            {prayer.iqama || '-'}
-                          </div>
-                        </div>
+                        <h3 className={`font-extrabold text-lg md:text-2xl font-serif text-center ${
+                          isNext && !isTimingOnly ? 'text-secondary-900' : 'text-white'
+                        }`}>
+                          {prayer.name}
+                        </h3>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+
+                    {/* Detail Section */}
+                    <div className="px-2 pb-2 md:px-4 md:pb-3">
+                      <div className="grid grid-cols-2 gap-2 md:gap-3">
+                        <div className={`border-r pr-2 md:pr-3 text-center ${
+                          isNext && !isTimingOnly ? 'border-secondary-300/50' : 'border-emerald-500/20'
+                        }`}>
+                          <div className={`text-[9px] md:text-[10px] uppercase tracking-wider mb-1 ${
+                            isNext && !isTimingOnly ? 'text-secondary-600' : 'text-emerald-400'
+                          }`}>
+                            Beginning
+                          </div>
+                          <div className={`text-xs md:text-sm font-semibold ${
+                            isNext && !isTimingOnly ? 'text-secondary-900' : 'text-white'
+                          }`}>
+                            {formatTimeWithSmallAmPm(prayer.begins)}
+                          </div>
+                        </div>
+                        <div className="pl-2 md:pl-3 text-center">
+                          <div className={`text-[9px] md:text-[10px] uppercase tracking-wider mb-1 ${
+                            isNext && !isTimingOnly ? 'text-secondary-600' : 'text-emerald-400'
+                          }`}>
+                            Athan
+                          </div>
+                          <div className={`text-xs md:text-sm font-semibold ${
+                            isNext && !isTimingOnly ? 'text-secondary-900' : 'text-white'
+                          }`}>
+                            {formatTimeWithSmallAmPm(prayer.adhan || '-')}
+                          </div>
+                        </div>
+                      </div>
+                      <div className={`border-t mt-2 pt-2 md:mt-3 md:pt-3 ${
+                        isNext && !isTimingOnly ? 'border-secondary-300/50' : 'border-emerald-500/20'
+                      }`}></div>
+                    </div>
+
+                    {/* Highlighted IQAMA Section */}
+                    <div className="px-2 pb-2 md:px-4 md:pb-4 rounded-b-xl text-center">
+                      <div className={`text-[9px] md:text-[10px] uppercase tracking-wider mb-1 md:mb-2 ${
+                        isNext && !isTimingOnly ? 'text-secondary-600' : 'text-emerald-400'
+                      }`}>
+                        Iqama
+                      </div>
+                      <div className={`text-2xl md:text-4xl font-bold font-serif text-center ${
+                        isNext && !isTimingOnly ? 'text-black' : 'text-white'
+                      }`}>
+                        {formatTimeWithSmallAmPm(prayer.iqama || '-')}
+                      </div>
+                    </div>
+                    </div>
+
+                    {/* Footer Accent */}
+                    {!isNext || isTimingOnly ? (
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 rounded-full bg-current/20"></div>
+                    ) : null}
+                  </motion.div>
+                );
+              })}
             </div>
           )}
 
           {!loading && !error && (
-            <div className="text-center mt-6">
+            <motion.div
+              className="text-center mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
               <a
                 href={PRAYER_TIMES_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-emerald-300/70 hover:text-emerald-200 transition-colors inline-flex items-center gap-1"
+                className="text-sm text-emerald-400/70 hover:text-emerald-300 transition-colors inline-flex items-center gap-1"
               >
                 Prayer times sourced from galaxystream.com
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
               </a>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
