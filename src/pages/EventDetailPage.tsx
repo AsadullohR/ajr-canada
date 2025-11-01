@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { fetchEventBySlug } from '../services/strapi';
@@ -171,10 +172,10 @@ export function EventDetailPage() {
 
             {/* Body Content */}
             {event.body && (
-              <div className="prose prose-lg max-w-none mb-12">
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+              <div className="prose prose-lg max-w-none mb-12 text-gray-700">
+                <ReactMarkdown>
                   {event.body}
-                </div>
+                </ReactMarkdown>
               </div>
             )}
 
