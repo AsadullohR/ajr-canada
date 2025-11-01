@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { fetchProgramBySlug } from '../services/strapi';
@@ -210,7 +212,7 @@ export function ProgramDetailPage() {
             {/* Body Content */}
             {program.body && (
               <div className="prose prose-lg max-w-none mb-12 text-gray-700">
-                <ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>
                   {program.body}
                 </ReactMarkdown>
               </div>
