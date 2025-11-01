@@ -3,6 +3,7 @@ import { HomePage } from './pages/HomePage';
 import { DonatePage } from './pages/DonatePage';
 import { AdminRedirect } from './pages/AdminRedirect';
 import { EventDetailPage } from './pages/EventDetailPage';
+import { ProgramDetailPage } from './pages/ProgramDetailPage';
 
 function App() {
   return (
@@ -10,7 +11,8 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/donate" element={<DonatePage />} />
       <Route path="/admin" element={<AdminRedirect />} />
-      <Route path="/:slug" element={<EventDetailPage />} />
+      <Route path="/programs/:slug" element={<ProgramDetailPage />} />
+      <Route path="/events/:slug" element={<EventDetailPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

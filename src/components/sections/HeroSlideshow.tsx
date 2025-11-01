@@ -754,7 +754,7 @@ export function HeroSlideshow() {
                           )}
                           {eventData?.slug && (
                             <motion.a
-                              href={`/${eventData.slug}`}
+                              href={`/events/${eventData.slug}`}
                               className="group relative inline-flex items-center justify-center px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-semibold text-white bg-transparent border-2 border-emerald-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:scale-105 active:scale-95"
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}

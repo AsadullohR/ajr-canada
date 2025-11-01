@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -10,6 +12,7 @@ const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 
 interface ProgramCardData {
   name: string;
+  slug: string;
   time: string;
   description: string;
   card_image?: string;
@@ -19,24 +22,28 @@ interface ProgramCardData {
 const FALLBACK_PROGRAMS: ProgramCardData[] = [
   {
     name: "Friday Prayer",
+    slug: "friday-prayer",
     time: "1:30 PM - 2:30 PM",
     description: "Weekly congregational prayer and khutbah focusing on relevant Islamic topics and community matters.",
     card_image: "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=400&h=300&fit=crop"
   },
   {
     name: "Weekend Islamic School",
+    slug: "weekend-islamic-school",
     time: "Saturday 10:00 AM - 2:00 PM",
     description: "Comprehensive Islamic education for children including Quran, Islamic studies, and Arabic language.",
     card_image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop"
   },
   {
     name: "Adult Quran Class",
+    slug: "adult-quran-class",
     time: "Sunday 10:00 AM - 12:00 PM",
     description: "Quran recitation and tajweed classes for adults of all levels.",
     card_image: "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=300&fit=crop"
   },
   {
     name: "Sisters' Halaqa",
+    slug: "sisters-halaqa",
     time: "Wednesday 7:00 PM - 8:30 PM",
     description: "Weekly gathering for sisters to discuss Islamic topics and build community.",
     card_image: "https://images.unsplash.com/photo-1519682577862-22b62b24e493?w=400&h=300&fit=crop"
@@ -113,6 +120,7 @@ function convertProgramToCardData(program: Program): ProgramCardData {
 
   return {
     name: program.title,
+    slug: program.slug,
     time: timeDisplay,
     description: program.description,
     card_image: imageUrl || undefined,
@@ -120,6 +128,7 @@ function convertProgramToCardData(program: Program): ProgramCardData {
 }
 
 export function Programs() {
+  const navigate = useNavigate();
   const [programs, setPrograms] = useState<ProgramCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -237,13 +246,21 @@ export function Programs() {
             <Slider {...sliderSettings}>
               {programs.map((program, index) => (
                 <div key={index} className="px-3 py-4">
-                  <div className="card overflow-hidden flex flex-col transform md:hover:scale-105 transition-transform duration-300" style={{ height: '370px' }}>
+                  <motion.div
+                    className="card overflow-hidden flex flex-col h-[370px] md:h-[450px] lg:h-[500px] cursor-pointer"
+                    whileHover={{ scale: 1.03, y: -3 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    onClick={() => navigate(`/programs/${program.slug}`)}
+                  >
                     {program.card_image ? (
-                      <div className="relative h-48 w-full overflow-hidden flex-shrink-0">
-                        <img
+                      <div className="relative h-48 md:h-56 lg:h-64 w-full overflow-hidden flex-shrink-0">
+                        <motion.img
                           src={program.card_image}
                           alt={program.name}
                           className="w-full h-full object-cover"
+                          whileHover={{ scale: 1.08 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
                             e.currentTarget.parentElement?.classList.add('hidden');
@@ -261,7 +278,7 @@ export function Programs() {
                       <p className="text-emerald-600 font-medium mb-2">{program.time}</p>
                       <p className="text-gray-600 flex-grow">{program.description}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
               ))}
             </Slider>
