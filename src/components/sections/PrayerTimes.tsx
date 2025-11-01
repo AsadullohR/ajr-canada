@@ -324,7 +324,7 @@ export function PrayerTimes() {
                           </h3>
                         </div>
                         {ARABIC_PRAYER_NAMES[prayer.name.toLowerCase()] && (
-                          <div className={`text-xs md:text-sm font-serif ${
+                          <div className={`text-lg md:text-xl font-serif ${
                             isNext && !isTimingOnly ? 'text-secondary-700' : 'text-emerald-300/70'
                           }`} style={{ direction: 'rtl' }}>
                             {ARABIC_PRAYER_NAMES[prayer.name.toLowerCase()]}
