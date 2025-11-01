@@ -3,20 +3,20 @@ import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { Program } from '../../types/program';
+import { fetchAllPrograms } from '../../services/strapi';
 
-interface Program {
+const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
+
+interface ProgramCardData {
   name: string;
   time: string;
   description: string;
   card_image?: string;
 }
 
-const SHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
-const PROGRAMS_GID = import.meta.env.VITE_PROGRAMS_GID;
-const SHEET_URL = SHEET_ID && PROGRAMS_GID ? `https://docs.google.com/spreadsheets/d/e/2PACX-${SHEET_ID}/pub?gid=${PROGRAMS_GID}&output=csv` : "";
-
 // Fallback data in case of API failure
-const FALLBACK_PROGRAMS: Program[] = [
+const FALLBACK_PROGRAMS: ProgramCardData[] = [
   {
     name: "Friday Prayer",
     time: "1:30 PM - 2:30 PM",
@@ -70,70 +70,84 @@ function PrevArrow(props: any) {
   );
 }
 
+// Helper function to convert Strapi Program to ProgramCardData
+function convertProgramToCardData(program: Program): ProgramCardData {
+  // Format time display
+  let timeDisplay = program.timeDescription || '';
+
+  if (!timeDisplay && program.eventTime) {
+    // Convert HH:mm:ss to readable format
+    const timeParts = program.eventTime.split(':');
+    const hours = parseInt(timeParts[0]);
+    const minutes = timeParts[1];
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    timeDisplay = `${displayHours}:${minutes} ${ampm}`;
+
+    // Add recurrence pattern
+    if (program.recurrencePattern === 'weekly') {
+      timeDisplay = `Weekly ${timeDisplay}`;
+    } else if (program.recurrencePattern === 'daily') {
+      timeDisplay = `Daily ${timeDisplay}`;
+    } else if (program.recurrencePattern === 'monthly') {
+      timeDisplay = `Monthly ${timeDisplay}`;
+    }
+  }
+
+  // Get thumbnail URL
+  let imageUrl = '';
+  if (program.thumbnail) {
+    const baseUrl = program.thumbnail.url.startsWith('http')
+      ? program.thumbnail.url
+      : `${STRAPI_URL}${program.thumbnail.url}`;
+
+    // Use medium format if available, otherwise use original
+    if (program.thumbnail.formats?.medium) {
+      imageUrl = program.thumbnail.formats.medium.url.startsWith('http')
+        ? program.thumbnail.formats.medium.url
+        : `${STRAPI_URL}${program.thumbnail.formats.medium.url}`;
+    } else {
+      imageUrl = baseUrl;
+    }
+  }
+
+  return {
+    name: program.title,
+    time: timeDisplay,
+    description: program.description,
+    card_image: imageUrl || undefined,
+  };
+}
+
 export function Programs() {
-  const [programs, setPrograms] = useState<Program[]>([]);
+  const [programs, setPrograms] = useState<ProgramCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPrograms = async () => {
+    const loadPrograms = async () => {
       try {
-        if (!SHEET_ID || !PROGRAMS_GID) {
-          setPrograms(FALLBACK_PROGRAMS);
-          setLoading(false);
-          return;
+        const response = await fetchAllPrograms();
+
+        if (response.data.length === 0) {
+          throw new Error('No programs found in Strapi');
         }
 
-        const response = await fetch(SHEET_URL);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const csvData = await response.text();
+        // Convert Strapi programs to card data format
+        const programCards = response.data.map(convertProgramToCardData);
 
-
-        // Parse CSV data (skip header row)
-        const rows = csvData.split('\n').slice(1);
-        const parsedPrograms = rows
-          .filter(row => row.trim()) // Skip empty rows
-          .map(row => {
-            const columns = row.split(',').map(cell =>
-              cell.replace(/^"|"$/g, '').trim() // Remove quotes and whitespace
-            );
-            const [name = '', time = '', description = '', card_image = ''] = columns;
-
-            // Convert Unsplash photo page URL to direct image URL
-            let imageUrl = card_image ? card_image.trim() : '';
-            if (imageUrl.includes('unsplash.com/photos/')) {
-              // Extract photo ID from URL like: https://unsplash.com/photos/a-wooden-chess-board-with-chess-pieces-on-it-hayc4n2dI-k
-              const photoId = imageUrl.split('/photos/')[1]?.split('?')[0]?.split('-').pop();
-              if (photoId) {
-                imageUrl = `https://images.unsplash.com/photo-${photoId}?w=400&h=300&fit=crop`;
-              }
-            } else if (imageUrl && !imageUrl.includes('?')) {
-              // If it's already a direct image URL without params, add them
-              imageUrl = `${imageUrl}?w=400&h=300&fit=crop`;
-            }
-
-            return { name, time, description, card_image: imageUrl || undefined };
-          })
-          .filter(program => program.name && program.time && program.description)
-
-        if (parsedPrograms.length === 0) {
-          throw new Error('No programs found in the spreadsheet');
-        }
-
-        setPrograms(parsedPrograms);
+        setPrograms(programCards);
         setError(null);
       } catch (err) {
-        console.error('Error fetching programs:', err.message || err);
-        setError('Failed to load programs. Using fallback data.');
+        console.error('Error fetching programs:', err);
+        setError('Failed to load programs from Strapi. Using fallback data.');
         setPrograms(FALLBACK_PROGRAMS);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPrograms();
+    loadPrograms();
   }, []);
 
   const sliderSettings = {
@@ -190,12 +204,28 @@ export function Programs() {
         ) : error ? (
           <div className="text-center">
             <p className="text-red-600">{error}</p>
-            <button 
+            <button
               onClick={() => {
                 setError(null);
                 setLoading(true);
-                setPrograms(FALLBACK_PROGRAMS);
-                setLoading(false);
+                // Retry loading programs from Strapi
+                fetchAllPrograms()
+                  .then(response => {
+                    if (response.data.length === 0) {
+                      throw new Error('No programs found');
+                    }
+                    const programCards = response.data.map(convertProgramToCardData);
+                    setPrograms(programCards);
+                    setError(null);
+                  })
+                  .catch(err => {
+                    console.error('Error retrying:', err);
+                    setError('Failed to load programs. Using fallback data.');
+                    setPrograms(FALLBACK_PROGRAMS);
+                  })
+                  .finally(() => {
+                    setLoading(false);
+                  });
               }}
               className="mt-4 btn btn-primary"
             >

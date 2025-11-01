@@ -1,4 +1,5 @@
 import { Event, EventsResponse } from '../types/event';
+import { Program, ProgramsResponse } from '../types/program';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 const STRAPI_API_TOKEN = import.meta.env.VITE_STRAPI_API_TOKEN;
@@ -186,6 +187,145 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
     return data.data.length > 0 ? data.data[0] : null;
   } catch (error) {
     console.error('Error fetching event by slug:', error);
+    return null;
+  }
+}
+
+// ============================================
+// PROGRAMS API FUNCTIONS
+// ============================================
+
+export async function fetchAllPrograms(): Promise<ProgramsResponse> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail', 'instructorPicture'],
+      sort: ['createdAt:desc'],
+      pagination: {
+        pageSize: 100, // Get all programs
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/programs?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      console.error('URL:', url);
+      console.error('Make sure:');
+      console.error('1. Programs collection type exists in Strapi');
+      console.error('2. API permissions are set for "programs" endpoint');
+      console.error('3. You have created at least one published program');
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ProgramsResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching programs:', error);
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: 0,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
+  }
+}
+
+export async function fetchFeaturedPrograms(): Promise<ProgramsResponse> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail', 'instructorPicture'],
+      filters: {
+        isFeatured: true,
+      },
+      sort: ['createdAt:desc'],
+      pagination: {
+        pageSize: 50,
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/programs?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ProgramsResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching featured programs:', error);
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: 0,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
+  }
+}
+
+export async function fetchProgramBySlug(slug: string): Promise<Program | null> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail', 'instructorPicture'],
+      filters: {
+        slug: { $eq: slug },
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/programs?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ProgramsResponse = await response.json();
+    return data.data.length > 0 ? data.data[0] : null;
+  } catch (error) {
+    console.error('Error fetching program by slug:', error);
     return null;
   }
 }
