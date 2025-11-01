@@ -9,6 +9,20 @@ interface PrayerTime {
   iqama?: string;
 }
 
+// Arabic prayer names mapping
+const ARABIC_PRAYER_NAMES: Record<string, string> = {
+  'fajr': 'الفجر',
+  'sunrise': 'الشروق',
+  'zawal': 'الزوال',
+  'dhuhr': 'الظهر',
+  'zuhr': 'الظهر',
+  'asr': 'العصر',
+  'maghrib': 'المغرب',
+  'isha': 'العشاء',
+  'jumah': 'الجمعة',
+  'jumu\'ah': 'الجمعة',
+};
+
 const SHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
 const PRAYER_TIMES_GID = import.meta.env.VITE_PRAYER_TIMES_GID || '0';
 const SHEET_URL = SHEET_ID ? `https://docs.google.com/spreadsheets/d/e/2PACX-${SHEET_ID}/pub?gid=${PRAYER_TIMES_GID}&single=true&output=csv` : "";
@@ -85,9 +99,23 @@ const convertToMinutes = (timeStr: string): number => {
 
 const getNextPrayer = (prayerTimes: PrayerTime[]): number => {
   const now = new Date();
-  const torontoTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Toronto' }));
-  const currentMinutes = torontoTime.getHours() * 60 + torontoTime.getMinutes();
-  const isFriday = torontoTime.getDay() === 5;
+  
+  // Get Toronto time components
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Toronto',
+    hour12: false,
+    hour: 'numeric',
+    minute: 'numeric',
+    weekday: 'long'
+  });
+  
+  const torontoParts = formatter.formatToParts(now);
+  const hours = parseInt(torontoParts.find(p => p.type === 'hour')?.value || '0');
+  const minutes = parseInt(torontoParts.find(p => p.type === 'minute')?.value || '0');
+  const weekday = torontoParts.find(p => p.type === 'weekday')?.value || '';
+  
+  const currentMinutes = hours * 60 + minutes;
+  const isFriday = weekday.toLowerCase() === 'friday';
   const prayersWithIqama = prayerTimes.filter(prayer => prayer.iqama);
 
   // If there are no prayers with iqama, return 0
@@ -242,30 +270,66 @@ export function PrayerTimes() {
                 return (
                   <motion.div
                     key={prayer.name}
-                    className={`relative backdrop-blur-md rounded-2xl border-2 transition-all duration-300 shadow-lg hover:shadow-xl ${
+                    className={`relative backdrop-blur-md rounded-2xl border-2 shadow-lg transition-colors duration-300 ${
                       isNext && !isTimingOnly
-                        ? 'bg-gradient-to-br from-secondary-50 via-secondary-50 to-secondary-100 border-secondary-500 scale-105 shadow-secondary-500/30 ring-2 ring-secondary-400/50'
-                        : 'bg-gradient-to-br from-gray-900/80 via-gray-800/80 to-gray-900/80 border-emerald-500/30 hover:border-emerald-500/50'
+                        ? 'bg-gradient-to-br from-secondary-50 via-secondary-50 to-secondary-100 border-secondary-500 shadow-secondary-500/30 ring-2 ring-secondary-400/50'
+                        : 'bg-gradient-to-br from-gray-900/80 via-gray-800/80 to-gray-900/80 border-emerald-500/30 hover:border-emerald-500/60'
                     }`}
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 + (index * 0.1) }}
-                    whileHover={{ scale: 1.02 }}
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0,
+                      scale: isNext && !isTimingOnly ? 1.05 : 1
+                    }}
+                    transition={{ 
+                      delay: 0.2 + (index * 0.1),
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 20
+                    }}
+                    whileHover={{ 
+                      scale: isNext && !isTimingOnly ? 1.06 : 1.03,
+                      boxShadow: isNext && !isTimingOnly 
+                        ? '0 20px 25px -5px rgba(245, 158, 11, 0.3), 0 10px 10px -5px rgba(245, 158, 11, 0.1)' 
+                        : '0 20px 25px -5px rgba(16, 185, 129, 0.3), 0 10px 10px -5px rgba(16, 185, 129, 0.1)',
+                      transition: {
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 25
+                      }
+                    }}
+                    whileTap={{ 
+                      scale: isNext && !isTimingOnly ? 1.04 : 1.01,
+                      transition: {
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 25
+                      }
+                    }}
                   >
                     <div className="overflow-hidden rounded-2xl">
                       {/* Header Section */}
                       <div className={`p-2 pb-2 md:p-4 md:pb-3 ${
                         isNext && !isTimingOnly ? 'bg-gradient-to-r from-secondary-600/10 to-secondary-600/10' : ''
                       }`}>
-                      <div className="flex items-center justify-center gap-2 md:gap-3">
-                        <div className={isNext && !isTimingOnly ? "text-secondary-500" : "text-emerald-500"}>
-                          {getPrayerIcon(prayer.name)}
+                      <div className="flex flex-col items-center gap-1 md:gap-2">
+                        <div className="flex items-center justify-center gap-2 md:gap-3">
+                          <div className={isNext && !isTimingOnly ? "text-secondary-500" : "text-emerald-500"}>
+                            {getPrayerIcon(prayer.name)}
+                          </div>
+                          <h3 className={`font-extrabold text-lg md:text-2xl font-serif text-center ${
+                            isNext && !isTimingOnly ? 'text-secondary-900' : 'text-white'
+                          }`}>
+                            {prayer.name}
+                          </h3>
                         </div>
-                        <h3 className={`font-extrabold text-lg md:text-2xl font-serif text-center ${
-                          isNext && !isTimingOnly ? 'text-secondary-900' : 'text-white'
-                        }`}>
-                          {prayer.name}
-                        </h3>
+                        {ARABIC_PRAYER_NAMES[prayer.name.toLowerCase()] && (
+                          <div className={`text-lg md:text-xl font-serif ${
+                            isNext && !isTimingOnly ? 'text-secondary-700' : 'text-emerald-300/70'
+                          }`} style={{ direction: 'rtl' }}>
+                            {ARABIC_PRAYER_NAMES[prayer.name.toLowerCase()]}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -351,6 +415,9 @@ export function PrayerTimes() {
           )}
         </div>
       </div>
+      
+      {/* Separator line matching HeroSlideshow progress bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-500"></div>
     </section>
   );
 }
