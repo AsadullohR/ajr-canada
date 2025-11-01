@@ -351,6 +351,9 @@ export function PrayerTimes() {
           )}
         </div>
       </div>
+      
+      {/* Separator line matching HeroSlideshow progress bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-500"></div>
     </section>
   );
 }
