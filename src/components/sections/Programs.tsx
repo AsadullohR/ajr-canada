@@ -199,11 +199,10 @@ export function Programs() {
   return (
     <section id="programs" className="py-24 bg-gray-50">
       <div className="px-4 md:px-8 lg:px-12 xl:px-16">
-        <div className="text-center mb-12">
-          <h2 className="section-title mb-4">Our Programs</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Discover our diverse range of educational and community programs designed to nurture spiritual growth and Islamic learning.
-          </p>
+        <div className="mb-16">
+          <h2 className="text-4xl font-serif font-semibold text-gray-900 md:text-5xl mb-8 text-center">
+            Our Programs
+          </h2>
         </div>
         
         {loading ? (
