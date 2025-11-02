@@ -465,16 +465,6 @@ function DesktopScrollContainer({ services }: { services: Service[] }) {
           </button>
         )}
 
-        {/* Right Fade Gradient */}
-        {canScrollRight && (
-          <div className="absolute right-0 top-0 bottom-0 w-40 bg-gradient-to-l from-zinc-900 via-zinc-900/70 to-transparent z-10 pointer-events-none" />
-        )}
-
-        {/* Left Fade Gradient */}
-        {canScrollLeft && (
-          <div className="absolute left-0 top-0 bottom-0 w-40 bg-gradient-to-r from-zinc-900 via-zinc-900/70 to-transparent z-10 pointer-events-none" />
-        )}
-
         <div
           ref={containerRef}
           className="overflow-x-auto overflow-y-visible scrollbar-hide cursor-grab active:cursor-grabbing px-8 py-8 select-none"

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Bell } from 'lucide-react';
+import { Calendar, Bell } from 'lucide-react';
 import { Event } from '../../types/event';
 import { Announcement } from '../../types/announcement';
 import { fetchAllEvents, fetchHomepageAnnouncements } from '../../services/strapi';
+
+const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 
 const formatEventDate = (dateStr: string, timeStr: string) => {
   const [year, month, day] = dateStr.split('-').map(Number);
@@ -23,6 +25,16 @@ const formatEventDate = (dateStr: string, timeStr: string) => {
   const formattedTime = `${hour12}:${minutes} ${ampm}`;
 
   return `${date.toLocaleDateString('en-US', options)} • ${formattedTime}`;
+};
+
+const formatAnnouncementDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  };
+  return date.toLocaleDateString('en-US', options);
 };
 
 const isUpcoming = (eventDate: string, eventTime: string) => {
@@ -155,6 +167,12 @@ export function UpcomingEvents() {
                   const isMuted = event.isMuted;
                   const isPast = event.isPast;
 
+                  // Get thumbnail URL
+                  const thumbnailUrl = event.thumbnail?.formats?.large?.url || event.thumbnail?.url;
+                  const fullThumbnailUrl = thumbnailUrl
+                    ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
+                    : null;
+
                   return (
                     <motion.div
                       key={event.id}
@@ -162,50 +180,77 @@ export function UpcomingEvents() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: index * 0.1 }}
-                      onClick={() => navigate(`/events/${event.slug}`)}
-                      className={`
-                        border-l-4 pl-4 py-3 cursor-pointer transition-all duration-200 rounded-r-lg
-                        ${isActive 
-                          ? 'border-emerald-400 bg-white/10 hover:bg-white/15' 
-                          : isMuted 
-                            ? 'border-white/30 bg-white/5 opacity-60 hover:opacity-80' 
-                            : 'border-white/40 bg-white/5 opacity-75 hover:opacity-90'
-                        }
-                      `}
+                      className="h-[280px]"
                     >
-                      <h3 className={`
-                        font-serif font-semibold mb-1 transition-colors
-                        ${isActive ? 'text-white text-lg' : 'text-white/80 text-base'}
-                      `}>
-                        {event.title}
-                      </h3>
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-white/70">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className={`w-4 h-4 ${isActive ? 'text-emerald-300' : 'text-white/50'}`} />
-                          <span>{formatEventDate(event.eventDate, event.eventTime)}</span>
-                        </div>
-                        {event.location && (
-                          <div className="flex items-center gap-1.5">
-                            <MapPin className={`w-4 h-4 ${isActive ? 'text-emerald-300' : 'text-white/50'}`} />
-                            <span>{event.location}</span>
+                      <motion.div
+                        onClick={() => navigate(`/events/${event.slug}`)}
+                        className={`
+                          h-full bg-black rounded-2xl shadow-2xl overflow-hidden cursor-pointer relative border-2
+                          transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]
+                          ${isActive 
+                            ? 'border-emerald-500 hover:border-emerald-400' 
+                            : isMuted 
+                              ? 'border-white/30 opacity-60 hover:opacity-80' 
+                              : 'border-white/40 opacity-75 hover:opacity-90'
+                          }
+                        `}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {/* Large Image Background */}
+                        {fullThumbnailUrl && (
+                          <div className="absolute inset-0">
+                            <img
+                              src={fullThumbnailUrl}
+                              alt={event.title}
+                              className="w-full h-full object-cover"
+                            />
+                            {/* Gradient overlay from top (transparent) to bottom (darker) */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
                           </div>
                         )}
-                      </div>
-                      <div className="mt-2">
-                        {isActive ? (
-                          <span className="inline-block px-2 py-1 text-xs font-semibold bg-emerald-600 text-white rounded">
-                            Next Event
-                          </span>
-                        ) : isMuted ? (
-                          <span className="inline-block px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">
-                            Future Event
-                          </span>
-                        ) : isPast ? (
-                          <span className="inline-block px-2 py-1 text-xs font-semibold bg-gray-200 text-gray-700 rounded">
-                            Past Event
-                          </span>
-                        ) : null}
-                      </div>
+
+                        {/* Content Overlay */}
+                        <div className="relative h-full flex flex-col p-4">
+                          {/* Bottom Section - Description Area */}
+                          <div className="mt-auto space-y-2">
+                            {/* Title */}
+                            <h3 className="font-serif font-bold text-xl text-white line-clamp-2 drop-shadow-lg">
+                              {event.title}
+                            </h3>
+                            
+                            {/* Description with backdrop blur */}
+                            <div className="bg-black/30 backdrop-blur-md rounded-lg p-2 border border-white/10">
+                              {event.description && (
+                                <p className="text-gray-200 text-xs line-clamp-2 mb-2">
+                                  {event.description}
+                                </p>
+                              )}
+                              {/* Date */}
+                              <div className="flex items-center gap-1 text-xs text-gray-200">
+                                <Calendar className="w-3 h-3 text-emerald-300" />
+                                <span>{formatEventDate(event.eventDate, event.eventTime)}</span>
+                              </div>
+                            </div>
+
+                            {/* Action Button */}
+                            <div className="pt-1">
+                              <motion.button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/events/${event.slug}`);
+                                }}
+                                className="group relative inline-flex items-center justify-center w-full px-3 py-1.5 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <span className="relative z-10">Learn More</span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                              </motion.button>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
                     </motion.div>
                   );
                 })}
@@ -243,38 +288,85 @@ export function UpcomingEvents() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {announcements.map((announcement, index) => (
-                    <motion.div
-                      key={announcement.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      onClick={() => navigate(`/announcements/${announcement.slug}`)}
-                      className="border-l-4 border-emerald-300 pl-4 py-3 cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 rounded-r-lg shadow-sm"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="font-serif font-semibold text-white text-lg flex-1">
-                          {announcement.title}
-                        </h3>
-                        {announcement.priority === 'high' && (
-                          <span className="px-2 py-1 text-xs font-semibold bg-red-500 text-white rounded whitespace-nowrap">
-                            High Priority
-                          </span>
-                        )}
-                      </div>
-                      {announcement.description && (
-                        <p className="text-white/70 text-sm line-clamp-2 mb-2">
-                          {announcement.description}
-                        </p>
-                      )}
-                      {announcement.category && (
-                        <span className="inline-block px-2 py-1 text-xs font-medium bg-white/20 text-white rounded capitalize">
-                          {announcement.category.replace('-', ' ')}
-                        </span>
-                      )}
-                    </motion.div>
-                  ))}
+                  {announcements.map((announcement, index) => {
+                    // Get thumbnail URL
+                    const thumbnailUrl = announcement.thumbnail?.formats?.large?.url || announcement.thumbnail?.url;
+                    const fullThumbnailUrl = thumbnailUrl
+                      ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
+                      : null;
+
+                    return (
+                      <motion.div
+                        key={announcement.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        className="h-[280px]"
+                      >
+                        <motion.div
+                          onClick={() => navigate(`/announcements/${announcement.slug}`)}
+                          className="h-full bg-black rounded-2xl shadow-2xl overflow-hidden cursor-pointer relative border-2 border-emerald-500 transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:border-emerald-400"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          {/* Large Image Background */}
+                          {fullThumbnailUrl && (
+                            <div className="absolute inset-0">
+                              <img
+                                src={fullThumbnailUrl}
+                                alt={announcement.title}
+                                className="w-full h-full object-cover"
+                              />
+                              {/* Gradient overlay from top (transparent) to bottom (darker) */}
+                              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
+                            </div>
+                          )}
+
+                          {/* Content Overlay */}
+                          <div className="relative h-full flex flex-col p-4">
+                            {/* Bottom Section - Description Area */}
+                            <div className="mt-auto space-y-2">
+                              {/* Title */}
+                              <h3 className="font-serif font-bold text-xl text-white line-clamp-2 drop-shadow-lg">
+                                {announcement.title}
+                              </h3>
+                              
+                              {/* Description with backdrop blur */}
+                              <div className="bg-black/30 backdrop-blur-md rounded-lg p-2 border border-white/10">
+                                {announcement.description && (
+                                  <p className="text-gray-200 text-xs line-clamp-2 mb-2">
+                                    {announcement.description}
+                                  </p>
+                                )}
+                                {/* Date */}
+                                <div className="flex items-center gap-1 text-xs text-gray-200">
+                                  <Calendar className="w-3 h-3 text-emerald-300" />
+                                  <span>{formatAnnouncementDate(announcement.publishDate || announcement.createdAt)}</span>
+                                </div>
+                              </div>
+
+                              {/* Action Button */}
+                              <div className="pt-1">
+                                <motion.button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/announcements/${announcement.slug}`);
+                                  }}
+                                  className="group relative inline-flex items-center justify-center w-full px-3 py-1.5 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  <span className="relative z-10">Learn More</span>
+                                  <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                </motion.button>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
               
@@ -310,38 +402,85 @@ export function UpcomingEvents() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {announcements.map((announcement, index) => (
-                    <motion.div
-                      key={announcement.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      onClick={() => navigate(`/announcements/${announcement.slug}`)}
-                      className="border-l-4 border-emerald-300 pl-4 py-3 cursor-pointer hover:bg-white/10 transition-all duration-200 bg-white/5 rounded-r-lg shadow-sm"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="font-serif font-semibold text-white text-lg flex-1">
-                          {announcement.title}
-                        </h3>
-                        {announcement.priority === 'high' && (
-                          <span className="px-2 py-1 text-xs font-semibold bg-red-500 text-white rounded whitespace-nowrap">
-                            High Priority
-                          </span>
-                        )}
-                      </div>
-                      {announcement.description && (
-                        <p className="text-white/70 text-sm line-clamp-2 mb-2">
-                          {announcement.description}
-                        </p>
-                      )}
-                      {announcement.category && (
-                        <span className="inline-block px-2 py-1 text-xs font-medium bg-white/20 text-white rounded capitalize">
-                          {announcement.category.replace('-', ' ')}
-                        </span>
-                      )}
-                    </motion.div>
-                  ))}
+                  {announcements.map((announcement, index) => {
+                    // Get thumbnail URL
+                    const thumbnailUrl = announcement.thumbnail?.formats?.large?.url || announcement.thumbnail?.url;
+                    const fullThumbnailUrl = thumbnailUrl
+                      ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
+                      : null;
+
+                    return (
+                      <motion.div
+                        key={announcement.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        className="h-[280px]"
+                      >
+                        <motion.div
+                          onClick={() => navigate(`/announcements/${announcement.slug}`)}
+                          className="h-full bg-black rounded-2xl shadow-2xl overflow-hidden cursor-pointer relative border-2 border-emerald-500 transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:border-emerald-400"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          {/* Large Image Background */}
+                          {fullThumbnailUrl && (
+                            <div className="absolute inset-0">
+                              <img
+                                src={fullThumbnailUrl}
+                                alt={announcement.title}
+                                className="w-full h-full object-cover"
+                              />
+                              {/* Gradient overlay from top (transparent) to bottom (darker) */}
+                              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
+                            </div>
+                          )}
+
+                          {/* Content Overlay */}
+                          <div className="relative h-full flex flex-col p-4">
+                            {/* Bottom Section - Description Area */}
+                            <div className="mt-auto space-y-2">
+                              {/* Title */}
+                              <h3 className="font-serif font-bold text-xl text-white line-clamp-2 drop-shadow-lg">
+                                {announcement.title}
+                              </h3>
+                              
+                              {/* Description with backdrop blur */}
+                              <div className="bg-black/30 backdrop-blur-md rounded-lg p-2 border border-white/10">
+                                {announcement.description && (
+                                  <p className="text-gray-200 text-xs line-clamp-2 mb-2">
+                                    {announcement.description}
+                                  </p>
+                                )}
+                                {/* Date */}
+                                <div className="flex items-center gap-1 text-xs text-gray-200">
+                                  <Calendar className="w-3 h-3 text-emerald-300" />
+                                  <span>{formatAnnouncementDate(announcement.publishDate || announcement.createdAt)}</span>
+                                </div>
+                              </div>
+
+                              {/* Action Button */}
+                              <div className="pt-1">
+                                <motion.button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/announcements/${announcement.slug}`);
+                                  }}
+                                  className="group relative inline-flex items-center justify-center w-full px-3 py-1.5 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  <span className="relative z-10">Learn More</span>
+                                  <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                </motion.button>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
               
