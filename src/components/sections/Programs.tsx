@@ -104,7 +104,7 @@ function CardItem({
               className="w-full h-full object-cover"
             />
             {/* Gradient overlay from bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-black/10"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/85 via-gray-800/75 to-gray-700/60"></div>
           </div>
         )}
 
@@ -451,7 +451,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     {/* Gradient overlay - becomes more transparent on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-black/10 group-hover:from-black/80 group-hover:via-black/40 group-hover:to-black/5 transition-all duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/85 via-gray-800/75 to-gray-700/60 group-hover:from-gray-900/60 group-hover:via-gray-800/40 group-hover:to-gray-700/20 transition-all duration-500"></div>
                   </div>
                 )}
 
