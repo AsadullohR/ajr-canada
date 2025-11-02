@@ -7,6 +7,28 @@ import { fetchAllPrograms } from '../../services/strapi';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 
+// Helper function to format recurrence pattern
+const getRecurrenceText = (program: Program) => {
+  let text = program.recurrencePattern.charAt(0).toUpperCase() + program.recurrencePattern.slice(1);
+  
+  if (program.recurrenceDaysOfWeek && program.recurrenceDaysOfWeek.length > 0) {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayNames = program.recurrenceDaysOfWeek.map(d => days[d]).join(', ');
+    text += ` • ${dayNames}`;
+  }
+  
+  return text;
+};
+
+// Helper function to format time
+const formatTime = (timeStr: string) => {
+  const [hours, minutes] = timeStr.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
 // Individual Card Component with drag physics
 interface CardItemProps {
   program: Program;
@@ -68,7 +90,7 @@ function CardItem({
       >
         {/* Image */}
         {fullThumbnailUrl && (
-          <div className="h-72 overflow-hidden">
+          <div className="h-48 overflow-hidden">
             <img
               src={fullThumbnailUrl}
               alt={program.title}
@@ -87,7 +109,7 @@ function CardItem({
           </div>
 
           {/* Title */}
-          <h3 className="font-serif font-bold text-2xl text-gray-900 mb-3 line-clamp-2">
+          <h3 className="font-serif font-bold text-2xl text-gray-900 mb-3 line-clamp-2 min-h-[3.5rem]">
             {program.title}
           </h3>
 
@@ -97,52 +119,64 @@ function CardItem({
           </p>
 
           {/* Meta Info */}
-          <div className="space-y-2">
-            {program.eventTime && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Clock className="w-4 h-4 text-emerald-500" />
-                <span>{program.timeDescription || program.eventTime}</span>
-              </div>
-            )}
-            {program.audience && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Users className="w-4 h-4 text-emerald-500" />
-                <span className="capitalize">{program.audience}</span>
-              </div>
-            )}
-            {program.recurrencePattern && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Calendar className="w-4 h-4 text-emerald-500" />
-                <span className="capitalize">{program.recurrencePattern}</span>
-              </div>
-            )}
+          <div className="grid grid-cols-2 gap-3">
+            {/* First Column */}
+            <div className="space-y-2">
+              {program.recurrencePattern && (
+                <div className="flex items-start gap-2 text-sm text-gray-600">
+                  <Calendar className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <span>{getRecurrenceText(program)}</span>
+                </div>
+              )}
+              {program.eventTime && (
+                <div className="flex items-start gap-2 text-sm text-gray-600">
+                  <Clock className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <span>{program.timeDescription || formatTime(program.eventTime)}</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Second Column */}
+            <div className="space-y-2">
+              {program.audience && (
+                <div className="flex items-start gap-2 text-sm text-gray-600">
+                  <Users className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <span className="capitalize">{program.audience}</span>
+                </div>
+              )}
+              {program.age && (
+                <div className="flex items-start gap-2 text-sm text-gray-600">
+                  <Users className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <span>{program.age}</span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Instructor */}
-          {program.instructor && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex items-center gap-3">
-                {program.instructorPicture?.url ? (
-                  <img
-                    src={program.instructorPicture.url.startsWith('http') 
-                      ? program.instructorPicture.url 
-                      : `${STRAPI_URL}${program.instructorPicture.url}`
-                    }
-                    alt={program.instructor}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-emerald-600" />
-                  </div>
-                )}
-                <div>
-                  <p className="text-xs text-gray-500">Instructor</p>
-                  <p className="text-sm font-semibold text-gray-900">{program.instructor}</p>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Action Button */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            {program.registrationRequired ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClick();
+                }}
+                className="w-full px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 transition-all duration-300 hover:shadow-lg"
+              >
+                Register Now
+              </button>
+            ) : (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClick();
+                }}
+                className="w-full px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors duration-200"
+              >
+                Learn More
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>
@@ -188,7 +222,7 @@ function MobileCardStack({ programs }: { programs: Program[] }) {
   }
 
   return (
-    <div className="relative h-[650px] w-full max-w-sm mx-auto">
+    <div className="relative h-[550px] w-full max-w-sm mx-auto">
       {cards.slice(0, 3).map((program, index) => {
         const isTop = index === 0;
         const thumbnailUrl = program.thumbnail?.formats?.medium?.url || program.thumbnail?.url;
@@ -355,7 +389,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-serif font-bold text-2xl text-gray-900 mb-3 line-clamp-2">
+                  <h3 className="font-serif font-bold text-2xl text-gray-900 mb-3 line-clamp-2 min-h-[3.5rem]">
                     {program.title}
                   </h3>
 
@@ -365,52 +399,64 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
                   </p>
 
                   {/* Meta Info */}
-                  <div className="space-y-2">
-                    {program.eventTime && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="w-4 h-4 text-emerald-500" />
-                        <span>{program.timeDescription || program.eventTime}</span>
-                      </div>
-                    )}
-                    {program.audience && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Users className="w-4 h-4 text-emerald-500" />
-                        <span className="capitalize">{program.audience}</span>
-                      </div>
-                    )}
-                    {program.recurrencePattern && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4 text-emerald-500" />
-                        <span className="capitalize">{program.recurrencePattern}</span>
-                      </div>
-                    )}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* First Column */}
+                    <div className="space-y-2">
+                      {program.recurrencePattern && (
+                        <div className="flex items-start gap-2 text-sm text-gray-600">
+                          <Calendar className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          <span>{getRecurrenceText(program)}</span>
+                        </div>
+                      )}
+                      {program.eventTime && (
+                        <div className="flex items-start gap-2 text-sm text-gray-600">
+                          <Clock className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          <span>{program.timeDescription || formatTime(program.eventTime)}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Second Column */}
+                    <div className="space-y-2">
+                      {program.audience && (
+                        <div className="flex items-start gap-2 text-sm text-gray-600">
+                          <Users className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          <span className="capitalize">{program.audience}</span>
+                        </div>
+                      )}
+                      {program.age && (
+                        <div className="flex items-start gap-2 text-sm text-gray-600">
+                          <Users className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          <span>{program.age}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Instructor */}
-                  {program.instructor && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="flex items-center gap-3">
-                        {program.instructorPicture?.url ? (
-                          <img
-                            src={program.instructorPicture.url.startsWith('http') 
-                              ? program.instructorPicture.url 
-                              : `${STRAPI_URL}${program.instructorPicture.url}`
-                            }
-                            alt={program.instructor}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                            <Users className="w-5 h-5 text-emerald-600" />
-                          </div>
-                        )}
-                        <div>
-                          <p className="text-xs text-gray-500">Instructor</p>
-                          <p className="text-sm font-semibold text-gray-900">{program.instructor}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {/* Action Button */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    {program.registrationRequired ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/programs/${program.slug}`);
+                        }}
+                        className="w-full px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 transition-all duration-300 hover:shadow-lg"
+                      >
+                        Register Now
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/programs/${program.slug}`);
+                        }}
+                        className="w-full px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors duration-200"
+                      >
+                        Learn More
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
