@@ -418,7 +418,7 @@ export function Programs() {
   if (loading) {
     return (
       <section id="programs" className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 md:px-0">
+        <div className="px-4">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mb-4"></div>
             <p className="text-gray-600">Loading programs...</p>
@@ -430,7 +430,7 @@ export function Programs() {
 
   return (
     <section id="programs" className="py-20 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 md:px-0">
+      <div className="px-4 ">
         {/* Section Header */}
         <motion.div
           className="text-center mb-16"
