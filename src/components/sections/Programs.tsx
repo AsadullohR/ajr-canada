@@ -85,7 +85,7 @@ function CardItem({
       }}
     >
       <div
-        className="h-full bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto"
+        className="h-full bg-gradient-to-br from-black/90 via-black/95 to-black/90 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden pointer-events-auto transition-colors duration-300"
         onClick={onClick}
       >
         {/* Image */}
@@ -102,19 +102,19 @@ function CardItem({
         {/* Content */}
         <div className="p-5">
           {/* Category Badge */}
-          <div className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full mb-3">
+          <div className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-semibold rounded-full mb-3 border border-emerald-500/30">
             {program.category.replace('-', ' ').split(' ').map(word => 
               word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' ')}
           </div>
 
           {/* Title */}
-          <h3 className="font-serif font-bold text-2xl text-gray-900 mb-3 line-clamp-2 min-h-[3.5rem]">
+          <h3 className="font-serif font-bold text-2xl text-white mb-3 line-clamp-2 min-h-[3.5rem]">
             {program.title}
           </h3>
 
           {/* Description */}
-          <p className="text-gray-600 mb-4 line-clamp-3">
+          <p className="text-gray-300 mb-4 line-clamp-3">
             {program.description}
           </p>
 
@@ -123,14 +123,14 @@ function CardItem({
             {/* First Column */}
             <div className="space-y-2">
               {program.recurrencePattern && (
-                <div className="flex items-start gap-2 text-sm text-gray-600">
-                  <Calendar className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-2 text-sm text-gray-300">
+                  <Calendar className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                   <span>{getRecurrenceText(program)}</span>
                 </div>
               )}
               {program.eventTime && (
-                <div className="flex items-start gap-2 text-sm text-gray-600">
-                  <Clock className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-2 text-sm text-gray-300">
+                  <Clock className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                   <span>{program.timeDescription || formatTime(program.eventTime)}</span>
                 </div>
               )}
@@ -139,14 +139,14 @@ function CardItem({
             {/* Second Column */}
             <div className="space-y-2">
               {program.audience && (
-                <div className="flex items-start gap-2 text-sm text-gray-600">
-                  <Users className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-2 text-sm text-gray-300">
+                  <Users className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                   <span className="capitalize">{program.audience}</span>
                 </div>
               )}
               {program.age && (
-                <div className="flex items-start gap-2 text-sm text-gray-600">
-                  <Users className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-2 text-sm text-gray-300">
+                  <Users className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                   <span>{program.age}</span>
                 </div>
               )}
@@ -154,7 +154,7 @@ function CardItem({
           </div>
 
           {/* Action Button */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-emerald-500/20">
             {program.registrationRequired ? (
               <button
                 onClick={(e) => {
@@ -365,7 +365,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
               transition={{ delay: index * 0.1 }}
             >
               <div
-                className="h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden cursor-pointer group"
+                className="h-full bg-gradient-to-br from-black/90 via-black/95 to-black/90 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer group"
                 onClick={() => navigate(`/programs/${program.slug}`)}
               >
                 {/* Image */}
@@ -382,19 +382,19 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
                 {/* Content */}
                 <div className="p-6">
                   {/* Category Badge */}
-                  <div className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full mb-3">
+                  <div className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-semibold rounded-full mb-3 border border-emerald-500/30">
                     {program.category.replace('-', ' ').split(' ').map(word => 
                       word.charAt(0).toUpperCase() + word.slice(1)
                     ).join(' ')}
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-serif font-bold text-2xl text-gray-900 mb-3 line-clamp-2 min-h-[3.5rem]">
+                  <h3 className="font-serif font-bold text-2xl text-white mb-3 line-clamp-2 min-h-[3.5rem]">
                     {program.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-600 mb-4 line-clamp-3">
+                  <p className="text-gray-300 mb-4 line-clamp-3">
                     {program.description}
                   </p>
 
@@ -403,14 +403,14 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
                     {/* First Column */}
                     <div className="space-y-2">
                       {program.recurrencePattern && (
-                        <div className="flex items-start gap-2 text-sm text-gray-600">
-                          <Calendar className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-2 text-sm text-gray-300">
+                          <Calendar className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                           <span>{getRecurrenceText(program)}</span>
                         </div>
                       )}
                       {program.eventTime && (
-                        <div className="flex items-start gap-2 text-sm text-gray-600">
-                          <Clock className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-2 text-sm text-gray-300">
+                          <Clock className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                           <span>{program.timeDescription || formatTime(program.eventTime)}</span>
                         </div>
                       )}
@@ -419,14 +419,14 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
                     {/* Second Column */}
                     <div className="space-y-2">
                       {program.audience && (
-                        <div className="flex items-start gap-2 text-sm text-gray-600">
-                          <Users className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-2 text-sm text-gray-300">
+                          <Users className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                           <span className="capitalize">{program.audience}</span>
                         </div>
                       )}
                       {program.age && (
-                        <div className="flex items-start gap-2 text-sm text-gray-600">
-                          <Users className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-2 text-sm text-gray-300">
+                          <Users className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                           <span>{program.age}</span>
                         </div>
                       )}
@@ -434,7 +434,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
                   </div>
 
                   {/* Action Button */}
-                  <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="mt-4 pt-4 border-t border-emerald-500/20">
                     {program.registrationRequired ? (
                       <button
                         onClick={(e) => {
