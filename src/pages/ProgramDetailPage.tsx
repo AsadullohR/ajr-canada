@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -359,12 +359,12 @@ export function ProgramDetailPage() {
                 </a>
               )}
 
-              <a
-                href="/"
+              <Link
+                to="/#services"
                 className="text-emerald-600 hover:text-emerald-700 underline font-medium transition-colors duration-200"
               >
                 Back to Home
-              </a>
+              </Link>
             </div>
           </motion.article>
         </div>

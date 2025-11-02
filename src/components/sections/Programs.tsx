@@ -1,31 +1,181 @@
 import { useState, useEffect, useRef } from 'react';
 import { Clock, Users, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion, PanInfo, useScroll } from 'framer-motion';
+import { motion, PanInfo, useScroll, useMotionValue, useTransform } from 'framer-motion';
 import { Program } from '../../types/program';
 import { fetchAllPrograms } from '../../services/strapi';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 
+// Individual Card Component with drag physics
+interface CardItemProps {
+  program: Program;
+  index: number;
+  isTop: boolean;
+  exitX: number;
+  fullThumbnailUrl: string | null;
+  cardsLength: number;
+  onDragStart: () => void;
+  onDragEnd: ((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void) | undefined;
+  onClick: () => void;
+}
+
+function CardItem({ 
+  program, 
+  index, 
+  isTop, 
+  exitX, 
+  fullThumbnailUrl, 
+  cardsLength,
+  onDragStart,
+  onDragEnd,
+  onClick 
+}: CardItemProps) {
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 0, 200], [-25, 0, 25]);
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0.5, 1, 1, 1, 0.5]);
+
+  return (
+    <motion.div
+      className="absolute inset-0 cursor-grab active:cursor-grabbing"
+      style={{
+        zIndex: cardsLength - index,
+        x: isTop ? x : 0,
+        rotate: isTop ? rotate : 0,
+        opacity: isTop ? opacity : 1 - index * 0.2,
+      }}
+      animate={
+        isTop && exitX !== 0
+          ? { x: exitX, opacity: 0, transition: { duration: 0.2 } }
+          : {
+              scale: 1 - index * 0.05,
+              y: index * 20,
+            }
+      }
+      drag={isTop ? "x" : false}
+      dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      }}
+    >
+      <div
+        className="h-full bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto"
+        onClick={onClick}
+      >
+        {/* Image */}
+        {fullThumbnailUrl && (
+          <div className="h-48 overflow-hidden">
+            <img
+              src={fullThumbnailUrl}
+              alt={program.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="p-6">
+          {/* Category Badge */}
+          <div className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full mb-3">
+            {program.category.replace('-', ' ').split(' ').map(word => 
+              word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ')}
+          </div>
+
+          {/* Title */}
+          <h3 className="font-serif font-bold text-2xl text-gray-900 mb-3 line-clamp-2">
+            {program.title}
+          </h3>
+
+          {/* Description */}
+          <p className="text-gray-600 mb-4 line-clamp-3">
+            {program.description}
+          </p>
+
+          {/* Meta Info */}
+          <div className="space-y-2">
+            {program.eventTime && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Clock className="w-4 h-4 text-emerald-500" />
+                <span>{program.timeDescription || program.eventTime}</span>
+              </div>
+            )}
+            {program.audience && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Users className="w-4 h-4 text-emerald-500" />
+                <span className="capitalize">{program.audience}</span>
+              </div>
+            )}
+            {program.recurrencePattern && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Calendar className="w-4 h-4 text-emerald-500" />
+                <span className="capitalize">{program.recurrencePattern}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Instructor */}
+          {program.instructor && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex items-center gap-3">
+                {program.instructorPicture?.url ? (
+                  <img
+                    src={program.instructorPicture.url.startsWith('http') 
+                      ? program.instructorPicture.url 
+                      : `${STRAPI_URL}${program.instructorPicture.url}`
+                    }
+                    alt={program.instructor}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-emerald-600" />
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-gray-500">Instructor</p>
+                  <p className="text-sm font-semibold text-gray-900">{program.instructor}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // Mobile Card Stack Component
 function MobileCardStack({ programs }: { programs: Program[] }) {
   const navigate = useNavigate();
   const [cards, setCards] = useState<Program[]>(programs);
+  const [exitX, setExitX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false);
     
-    // If swiped left or right significantly, move card to back
+    // If swiped left or right significantly, animate card off screen
     if (Math.abs(info.offset.x) > 100) {
-      setCards((prev) => {
-        const newCards = [...prev];
-        const topCard = newCards.shift();
-        if (topCard) {
-          newCards.push(topCard);
-        }
-        return newCards;
-      });
+      // Set exit direction
+      setExitX(info.offset.x > 0 ? 1000 : -1000);
+      
+      // Move card to back after animation
+      setTimeout(() => {
+        setCards((prev) => {
+          const newCards = [...prev];
+          const topCard = newCards.shift();
+          if (topCard) {
+            newCards.push(topCard);
+          }
+          return newCards;
+        });
+        setExitX(0);
+      }, 200);
     }
   };
 
@@ -51,113 +201,18 @@ function MobileCardStack({ programs }: { programs: Program[] }) {
         const uniqueKey = `${program.id}-${cardIndex}-${index}`;
 
         return (
-          <motion.div
+          <CardItem
             key={uniqueKey}
-            className="absolute inset-0 cursor-grab active:cursor-grabbing"
-            style={{
-              zIndex: cards.length - index,
-            }}
-            initial={false}
-            animate={{
-              scale: 1 - index * 0.05,
-              y: index * 20,
-              opacity: 1 - index * 0.2,
-            }}
-            drag={isTop ? "x" : false}
-            dragConstraints={{ left: 0, right: 0 }}
+            program={program}
+            index={index}
+            isTop={isTop}
+            exitX={exitX}
+            fullThumbnailUrl={fullThumbnailUrl}
+            cardsLength={cards.length}
             onDragStart={() => isTop && setIsDragging(true)}
             onDragEnd={isTop ? handleDragEnd : undefined}
-            whileDrag={{ scale: 1.05, rotate: 0 }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
-            }}
-          >
-            <div
-              className="h-full bg-white rounded-2xl shadow-2xl overflow-hidden"
-              onClick={() => !isDragging && isTop && navigate(`/programs/${program.slug}`)}
-            >
-              {/* Image */}
-              {fullThumbnailUrl && (
-                <div className="h-48 overflow-hidden">
-                  <img
-                    src={fullThumbnailUrl}
-                    alt={program.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              {/* Content */}
-              <div className="p-6">
-                {/* Category Badge */}
-                <div className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full mb-3">
-                  {program.category.replace('-', ' ').split(' ').map(word => 
-                    word.charAt(0).toUpperCase() + word.slice(1)
-                  ).join(' ')}
-                </div>
-
-                {/* Title */}
-                <h3 className="font-serif font-bold text-2xl text-gray-900 mb-3 line-clamp-2">
-                  {program.title}
-                </h3>
-
-                {/* Description */}
-                <p className="text-gray-600 mb-4 line-clamp-3">
-                  {program.description}
-                </p>
-
-                {/* Meta Info */}
-                <div className="space-y-2">
-                  {program.eventTime && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4 text-emerald-500" />
-                      <span>{program.timeDescription || program.eventTime}</span>
-                    </div>
-                  )}
-                  {program.audience && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Users className="w-4 h-4 text-emerald-500" />
-                      <span className="capitalize">{program.audience}</span>
-                    </div>
-                  )}
-                  {program.recurrencePattern && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar className="w-4 h-4 text-emerald-500" />
-                      <span className="capitalize">{program.recurrencePattern}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Instructor */}
-                {program.instructor && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="flex items-center gap-3">
-                      {program.instructorPicture?.url ? (
-                        <img
-                          src={program.instructorPicture.url.startsWith('http') 
-                            ? program.instructorPicture.url 
-                            : `${STRAPI_URL}${program.instructorPicture.url}`
-                          }
-                          alt={program.instructor}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                          <Users className="w-5 h-5 text-emerald-600" />
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-xs text-gray-500">Instructor</p>
-                        <p className="text-sm font-semibold text-gray-900">{program.instructor}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
+            onClick={() => !isDragging && isTop && navigate(`/programs/${program.slug}`)}
+          />
         );
       })}
 
