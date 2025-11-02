@@ -95,7 +95,14 @@ export function ProgramDetailPage() {
     
     if (program.recurrenceDaysOfWeek && program.recurrenceDaysOfWeek.length > 0) {
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const dayNames = program.recurrenceDaysOfWeek.map(d => days[d]).join(', ');
+      const dayNames = program.recurrenceDaysOfWeek.map(d => {
+        // If it's a string, use it directly (e.g., "Saturdays")
+        if (typeof d === 'string') {
+          return d;
+        }
+        // If it's a number, map it to day name
+        return days[d];
+      }).join(', ');
       text += ` (${dayNames})`;
     }
     

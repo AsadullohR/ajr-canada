@@ -13,7 +13,14 @@ const getRecurrenceText = (program: Program) => {
   
   if (program.recurrenceDaysOfWeek && program.recurrenceDaysOfWeek.length > 0) {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const dayNames = program.recurrenceDaysOfWeek.map(d => days[d]).join(', ');
+    const dayNames = program.recurrenceDaysOfWeek.map(d => {
+      // If it's a string, use it directly (e.g., "Saturdays")
+      if (typeof d === 'string') {
+        return d;
+      }
+      // If it's a number, map it to day name
+      return days[d];
+    }).join(', ');
     text += ` • ${dayNames}`;
   }
   
@@ -591,7 +598,13 @@ export function Programs() {
     const loadPrograms = async () => {
       setLoading(true);
       const response = await fetchAllPrograms();
-      setPrograms(response.data);
+      // Sort programs by createdAt descending (latest first)
+      const sortedPrograms = [...response.data].sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA; // Descending order
+      });
+      setPrograms(sortedPrograms);
       setLoading(false);
     };
 

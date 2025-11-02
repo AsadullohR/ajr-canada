@@ -29,7 +29,7 @@ export interface Program {
   address?: string;
   recurrencePattern: 'daily' | 'weekly' | 'monthly' | 'yearly';
   recurrenceInterval?: number;
-  recurrenceDaysOfWeek?: number[]; // JSON array of day numbers (0-6)
+  recurrenceDaysOfWeek?: (number | string)[]; // JSON array of day numbers (0-6) or day names (e.g., "Saturdays")
   eventTime?: string; // Time format HH:mm:ss
   timeDescription?: string;
   age?: string;
