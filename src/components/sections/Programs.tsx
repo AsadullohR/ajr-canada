@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Clock, Users, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, Users, Calendar, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, PanInfo, useScroll, useMotionValue, useTransform } from 'framer-motion';
 import { Program } from '../../types/program';
@@ -49,16 +49,16 @@ interface CardItemProps {
   onClick: () => void;
 }
 
-function CardItem({ 
-  program, 
-  index, 
-  isTop, 
-  exitX, 
-  fullThumbnailUrl, 
+function CardItem({
+  program,
+  index,
+  isTop,
+  exitX,
+  fullThumbnailUrl,
   cardsLength,
   onDragStart,
   onDragEnd,
-  onClick 
+  onClick
 }: CardItemProps) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 0, 200], [-25, 0, 25]);
@@ -66,30 +66,18 @@ function CardItem({
 
   return (
     <motion.div
-      className="absolute inset-0 cursor-grab active:cursor-grabbing"
+      className="h-full cursor-grab active:cursor-grabbing"
       style={{
-        zIndex: cardsLength - index,
         x: isTop ? x : 0,
         rotate: isTop ? rotate : 0,
         opacity: isTop ? opacity : 1 - index * 0.2,
+        touchAction: isTop ? 'none' : 'auto',
       }}
-      animate={
-        isTop && exitX !== 0
-          ? { x: exitX, opacity: 0, transition: { duration: 0.2 } }
-          : {
-              scale: 1 - index * 0.05,
-              y: index * 20,
-            }
-      }
       drag={isTop ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+      dragElastic={0.1}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      transition={{
-        type: "spring",
-        stiffness: 300,
-        damping: 20,
-      }}
     >
       <div
         className="h-full bg-black rounded-2xl shadow-2xl overflow-hidden pointer-events-auto relative"
@@ -103,8 +91,8 @@ function CardItem({
               alt={program.title}
               className="w-full h-full object-cover"
             />
-            {/* Gradient overlay from bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/75 to-black/60"></div>
+            {/* Gradient overlay from top (transparent) to bottom (darker) */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
           </div>
         )}
 
@@ -160,7 +148,7 @@ function CardItem({
                   )}
                   {program.age && (
                     <div className="flex items-start gap-1.5 text-xs text-gray-300">
-                      <Users className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <User className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
                       <span className="leading-tight">{program.age}</span>
                     </div>
                   )}
@@ -205,15 +193,50 @@ function MobileCardStack({ programs }: { programs: Program[] }) {
   const [cards, setCards] = useState<Program[]>(programs);
   const [exitX, setExitX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [tiltCard, setTiltCard] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const hasShownTilt = useRef(false);
+
+  // Subtle tilt animation when section is in view (only once)
+  useEffect(() => {
+    if (cards.length <= 1 || hasShownTilt.current) return;
+
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5 && !isDragging && !hasShownTilt.current) {
+            // Mark as shown
+            hasShownTilt.current = true;
+            // Tilt to reveal
+            setTiltCard(true);
+            // Tilt back after 1 second
+            setTimeout(() => {
+              setTiltCard(false);
+            }, 1000);
+          }
+        });
+      },
+      {
+        threshold: [0.5],
+      }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [isDragging, cards.length]);
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false);
-    
+
     // If swiped left or right significantly, animate card off screen
     if (Math.abs(info.offset.x) > 100) {
       // Set exit direction
       setExitX(info.offset.x > 0 ? 1000 : -1000);
-      
+
       // Move card to back after animation
       setTimeout(() => {
         setCards((prev) => {
@@ -224,6 +247,8 @@ function MobileCardStack({ programs }: { programs: Program[] }) {
           }
           return newCards;
         });
+        // Always advance forward regardless of swipe direction
+        setCurrentIndex((prev) => (prev + 1) % programs.length);
         setExitX(0);
       }, 200);
     }
@@ -238,38 +263,73 @@ function MobileCardStack({ programs }: { programs: Program[] }) {
   }
 
   return (
-    <div className="relative h-[550px] w-full max-w-sm mx-auto">
-      {cards.slice(0, 3).map((program, index) => {
-        const isTop = index === 0;
-        const thumbnailUrl = program.thumbnail?.formats?.medium?.url || program.thumbnail?.url;
-        const fullThumbnailUrl = thumbnailUrl
-          ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
-          : null;
+    <div ref={sectionRef} className="w-full max-w-sm mx-auto flex flex-col gap-8">
+      <div className="relative h-[550px] mb-4">
+        {cards.slice(0, 3).map((program, index) => {
+          const isTop = index === 0;
+          const thumbnailUrl = program.thumbnail?.formats?.medium?.url || program.thumbnail?.url;
+          const fullThumbnailUrl = thumbnailUrl
+            ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
+            : null;
 
-        // Create unique key using both program id and current index in cards array
-        const cardIndex = cards.indexOf(program);
-        const uniqueKey = `${program.id}-${cardIndex}-${index}`;
+          // Create unique key using both program id and current index in cards array
+          const cardIndex = cards.indexOf(program);
+          const uniqueKey = `${program.id}-${cardIndex}-${index}`;
 
-        return (
-          <CardItem
-            key={uniqueKey}
-            program={program}
-            index={index}
-            isTop={isTop}
-            exitX={exitX}
-            fullThumbnailUrl={fullThumbnailUrl}
-            cardsLength={cards.length}
-            onDragStart={() => isTop && setIsDragging(true)}
-            onDragEnd={isTop ? handleDragEnd : undefined}
-            onClick={() => !isDragging && isTop && navigate(`/programs/${program.slug}`)}
-          />
-        );
-      })}
+          return (
+            <motion.div
+              key={uniqueKey}
+              className="absolute inset-0"
+              style={{
+                zIndex: cards.length - index,
+                transformOrigin: 'bottom center',
+              }}
+              animate={
+                isTop && exitX !== 0
+                  ? { x: exitX, opacity: 0, transition: { duration: 0.2 } }
+                  : {
+                      scale: 1 - index * 0.05,
+                      y: index * 20,
+                      rotate: isTop && tiltCard ? -5 : 0,
+                    }
+              }
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 20,
+              }}
+            >
+              <CardItem
+                program={program}
+                index={index}
+                isTop={isTop}
+                exitX={0}
+                fullThumbnailUrl={fullThumbnailUrl}
+                cardsLength={cards.length}
+                onDragStart={() => isTop && setIsDragging(true)}
+                onDragEnd={isTop ? handleDragEnd : undefined}
+                onClick={() => !isDragging && isTop && navigate(`/programs/${program.slug}`)}
+              />
+            </motion.div>
+          );
+        })}
+      </div>
 
-      {/* Swipe Hint */}
+      {/* Card Indicators */}
       {cards.length > 1 && (
-        <div className="absolute -bottom-12 left-0 right-0 text-center">
-          <p className="text-sm text-gray-500">Swipe left or right</p>
+        <div className="flex justify-center items-center gap-2">
+          {programs.map((_, index) => (
+            <div
+              key={index}
+              className={`rounded-full transition-all duration-300 flex items-center justify-center ${
+                index === currentIndex
+                  ? 'w-8 h-8 bg-transparent border-2 border-amber-500 text-amber-500 text-xs font-bold scale-110'
+                  : 'w-2 h-2 bg-transparent border border-amber-500/50'
+              }`}
+            >
+              {index === currentIndex && <span>{index + 1}</span>}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -280,13 +340,18 @@ function MobileCardStack({ programs }: { programs: Program[] }) {
 function DesktopScrollContainer({ programs }: { programs: Program[] }) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollXProgress } = useScroll({ container: containerRef });
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isInView, setIsInView] = useState(false);
   const hasDraggedRef = useRef(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollDirectionRef = useRef<'right' | 'left'>('right');
 
   const checkScroll = () => {
     if (containerRef.current) {
@@ -305,6 +370,74 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
     }
   }, []);
 
+  // Intersection Observer to detect when section is in view
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsInView(entry.isIntersecting && entry.intersectionRatio > 0.3);
+        });
+      },
+      {
+        threshold: [0, 0.3, 0.5, 0.7, 1],
+        rootMargin: '-100px 0px -100px 0px'
+      }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  // Auto-scroll functionality
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const startAutoScroll = () => {
+      if (autoScrollIntervalRef.current) return;
+
+      autoScrollIntervalRef.current = setInterval(() => {
+        if (!container || isDragging || isHovering || !isInView) return;
+
+        const { scrollLeft, scrollWidth, clientWidth } = container;
+        const maxScroll = scrollWidth - clientWidth;
+
+        // Check if we've reached the end or start and reverse direction
+        if (scrollLeft >= maxScroll - 10) {
+          scrollDirectionRef.current = 'left';
+        } else if (scrollLeft <= 10) {
+          scrollDirectionRef.current = 'right';
+        }
+
+        // Scroll in the current direction
+        if (scrollDirectionRef.current === 'right') {
+          container.scrollLeft += 1;
+        } else {
+          container.scrollLeft -= 1;
+        }
+      }, 50); // 50ms for slower, smooth animation
+    };
+
+    const stopAutoScroll = () => {
+      if (autoScrollIntervalRef.current) {
+        clearInterval(autoScrollIntervalRef.current);
+        autoScrollIntervalRef.current = null;
+      }
+    };
+
+    // Start auto-scroll if not hovering, dragging, and section is in view
+    if (!isHovering && !isDragging && isInView) {
+      startAutoScroll();
+    } else {
+      stopAutoScroll();
+    }
+
+    return () => stopAutoScroll();
+  }, [isDragging, isHovering, isInView]);
+
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     setIsDragging(true);
@@ -317,6 +450,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
 
   const handleMouseLeave = () => {
     setIsDragging(false);
+    setIsHovering(false);
     if (containerRef.current) {
       containerRef.current.style.cursor = 'grab';
     }
@@ -324,6 +458,10 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
     setTimeout(() => {
       hasDraggedRef.current = false;
     }, 100);
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovering(true);
   };
 
   const handleMouseUp = () => {
@@ -372,7 +510,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
   }
 
   return (
-    <div className="relative -mx-4 md:mx-0">
+    <div ref={sectionRef} className="relative -mx-4 md:mx-0">
       <div className="relative overflow-hidden">
         {/* Left Arrow */}
         {canScrollLeft && (
@@ -416,6 +554,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
             userSelect: 'none',
           }}
           onMouseDown={handleMouseDown}
+          onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
@@ -451,8 +590,8 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     {/* Gradient overlay - becomes more transparent on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/75 to-black/60 transition-opacity duration-500 group-hover:opacity-0"></div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-black/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black/80 transition-opacity duration-500 group-hover:opacity-0"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/60 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
                   </div>
                 )}
 
