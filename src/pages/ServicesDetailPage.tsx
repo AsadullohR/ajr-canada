@@ -4,14 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
+import { Phone, Mail, ExternalLink } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { fetchEventBySlug } from '../services/strapi';
-import { Event } from '../types/event';
+import { fetchServiceBySlug } from '../services/strapi';
+import { Service } from '../types/service';
 
-export function EventDetailPage() {
+const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
+
+export function ServicesDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [event, setEvent] = useState<Event | null>(null);
+  const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,16 +28,16 @@ export function EventDetailPage() {
   }, []);
 
   useEffect(() => {
-    const loadEvent = async () => {
+    const loadService = async () => {
       if (!slug) return;
 
       setLoading(true);
-      const eventData = await fetchEventBySlug(slug);
-      setEvent(eventData);
+      const serviceData = await fetchServiceBySlug(slug);
+      setService(serviceData);
       setLoading(false);
     };
 
-    loadEvent();
+    loadService();
   }, [slug]);
 
   // Close modal on Escape key
@@ -53,42 +56,27 @@ export function EventDetailPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mb-4"></div>
-          <p className="text-gray-600">Loading event...</p>
+          <p className="text-gray-600">Loading service...</p>
         </div>
       </div>
     );
   }
 
-  if (!event) {
+  if (!service) {
     return <Navigate to="/" replace />;
   }
 
   // Get thumbnail URL
-  const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
-  const thumbnailUrl = event.thumbnail?.formats?.large?.url || event.thumbnail?.url;
+  const thumbnailUrl = service.thumbnail?.formats?.large?.url || service.thumbnail?.url;
   const fullThumbnailUrl = thumbnailUrl
     ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
     : null;
 
-  const formatEventDate = (dateStr: string, timeStr: string) => {
-    // Parse date as local date to avoid timezone issues
-    const [year, month, day] = dateStr.split('-').map(Number);
-    const date = new Date(year, month - 1, day); // month is 0-indexed
-
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    };
-
-    // Format time from 24hr to 12hr format
-    const [hours, minutes] = timeStr.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    const formattedTime = `${hour12}:${minutes} ${ampm}`;
-
-    return `${date.toLocaleDateString('en-US', options)} • ${formattedTime}`;
+  const formatCategory = (category: string) => {
+    return category
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
 
   return (
@@ -110,34 +98,15 @@ export function EventDetailPage() {
 
           {/* Content Container - positioned at bottom */}
           <div className="absolute inset-0 flex flex-col justify-end px-4 md:px-8 lg:px-12 xl:px-16 pb-8 md:pb-12">
-            {/* Title */}
-            <h1 className="font-serif font-bold text-4xl md:text-5xl text-white leading-tight max-w-4xl mb-6">
-              {event.title}
-            </h1>
-
-            {/* Meta Information */}
-            <div className="flex flex-wrap gap-6">
-              <div className="flex items-center gap-2 text-white/90">
-                <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="font-medium">
-                  {formatEventDate(event.eventDate, event.eventTime)}
-                </span>
-              </div>
-              {event.endDate && event.endDate !== event.eventDate && (
-                <div className="flex items-center gap-2 text-white/90">
-                  <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="font-medium">
-                    {formatEventDate(event.endDate, event.endTime || '')}
-                  </span>
-                </div>
-              )}
+            {/* Category Badge */}
+            <div className="inline-block w-fit px-4 py-2 bg-amber-500/80 backdrop-blur-sm text-white hover:bg-amber-600/80 focus:ring-amber-400 shadow-lg shadow-amber-500/30 text-sm font-semibold rounded-full mb-4">
+              {formatCategory(service.category)}
             </div>
 
-            
+            {/* Title */}
+            <h1 className="font-serif font-bold text-4xl md:text-5xl text-white leading-tight max-w-4xl mb-6">
+              {service.title}
+            </h1>
           </div>
         </div>
 
@@ -148,7 +117,7 @@ export function EventDetailPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Event Thumbnail/Poster */}
+            {/* Service Thumbnail */}
             {fullThumbnailUrl && (
               <div className="mb-12">
                 <button
@@ -157,7 +126,7 @@ export function EventDetailPage() {
                 >
                   <img
                     src={fullThumbnailUrl}
-                    alt={event.title}
+                    alt={service.title}
                     className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105"
                   />
                   {/* Magnifying glass overlay */}
@@ -172,105 +141,57 @@ export function EventDetailPage() {
               </div>
             )}
 
+            {/* Description */}
+            <div className="mb-8">
+              <h2 className="font-serif font-bold text-2xl text-gray-900 mb-4">About This Service</h2>
+              <p className="text-lg text-gray-700 leading-relaxed">{service.description}</p>
+            </div>
+
             {/* Body Content */}
-            {event.body && (
+            {service.body && (
               <div className="prose prose-lg max-w-none mb-12 text-gray-700">
                 <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>
-                  {event.body}
+                  {service.body}
                 </ReactMarkdown>
               </div>
             )}
 
-            {/* Additional Information */}
-            {(event.location || event.organizer || event.category || event.capacity || event.locationAddress || event.contactEmail || event.contactPhone) && (
+            {/* Service Information */}
+            {(service.contactEmail || service.contactPhone || service.category) && (
               <div className="bg-gray-100 rounded-lg p-6 mb-8">
-                <h2 className="font-serif font-bold text-2xl text-gray-900 mb-6">Event Information</h2>
+                <h2 className="font-serif font-bold text-2xl text-gray-900 mb-6">Service Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {event.location && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Location</p>
-                        <p className="text-gray-600">{event.location}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {event.organizer && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Organizer</p>
-                        <p className="text-gray-600">{event.organizer}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {event.category && (
+                  {service.category && (
                     <div className="flex items-start gap-3">
                       <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                       </svg>
                       <div>
                         <p className="font-medium text-gray-900">Category</p>
-                        <p className="text-gray-600">{event.category.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</p>
+                        <p className="text-gray-600">{formatCategory(service.category)}</p>
                       </div>
                     </div>
                   )}
 
-                  {event.capacity && (
+                  {service.contactEmail && (
                     <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Capacity</p>
-                        <p className="text-gray-600">{event.capacity}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {event.locationAddress && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Address</p>
-                        <p className="text-gray-600">{event.locationAddress}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {event.contactEmail && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
+                      <Mail className="w-5 h-5 text-emerald-500 mt-1" />
                       <div>
                         <p className="font-medium text-gray-900">Email</p>
-                        <a href={`mailto:${event.contactEmail}`} className="text-emerald-600 hover:text-emerald-700">
-                          {event.contactEmail}
+                        <a href={`mailto:${service.contactEmail}`} className="text-emerald-600 hover:text-emerald-700">
+                          {service.contactEmail}
                         </a>
                       </div>
                     </div>
                   )}
 
-                  {event.contactPhone && (
+                  {service.contactPhone && (
                     <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
+                      <Phone className="w-5 h-5 text-emerald-500 mt-1" />
                       <div>
                         <p className="font-medium text-gray-900">Phone</p>
-                        <a href={`tel:${event.contactPhone}`} className="text-emerald-600 hover:text-emerald-700">
-                          {event.contactPhone}
+                        <a href={`tel:${service.contactPhone}`} className="text-emerald-600 hover:text-emerald-700">
+                          {service.contactPhone}
                         </a>
                       </div>
                     </div>
@@ -281,14 +202,17 @@ export function EventDetailPage() {
 
             {/* Call to Action Buttons */}
             <div className="flex flex-col gap-4">
-              {event.registrationLink && (
+              {service.link && (
                 <a
-                  href={event.registrationLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={service.link}
+                  target={service.linkType === 'external' ? '_blank' : undefined}
+                  rel={service.linkType === 'external' ? 'noopener noreferrer' : undefined}
                   className="w-full group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(251,146,60,0.8)] hover:scale-105 active:scale-95"
                 >
-                  <span className="relative z-10">Register Now</span>
+                  <span className="relative z-10 flex items-center gap-2">
+                    Learn More
+                    {service.linkType === 'external' && <ExternalLink className="w-5 h-5" />}
+                  </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </a>
               )}
@@ -330,7 +254,7 @@ export function EventDetailPage() {
             {/* Full-screen image */}
             <motion.img
               src={fullThumbnailUrl}
-              alt={event.title}
+              alt={service.title}
               className="max-w-full max-h-full object-contain p-4"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -344,3 +268,4 @@ export function EventDetailPage() {
     </div>
   );
 }
+

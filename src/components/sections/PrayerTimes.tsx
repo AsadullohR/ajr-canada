@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Sun, Moon, Clock, Sunrise, Sunset } from 'lucide-react';
 
 interface PrayerTime {
@@ -157,6 +157,12 @@ export function PrayerTimes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nextPrayerIndex, setNextPrayerIndex] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  });
+  const y = useTransform(scrollYProgress, [0, 1], ['-50%', '50%']);
 
   useEffect(() => {
     const fetchPrayerTimes = async () => {
@@ -219,7 +225,21 @@ export function PrayerTimes() {
   }, [prayerTimes]);
 
   return (
-    <section id="prayer-times" className="py-24 relative overflow-hidden bg-black">
+    <section ref={sectionRef} id="prayer-times" className="py-24 relative overflow-hidden bg-black">
+      {/* Parallax background image */}
+      <motion.div
+        className="absolute inset-0 w-full h-[140%] -top-[20%]"
+        style={{ y }}
+      >
+        <img
+          src="/images/stars.jpg"
+          alt=""
+          className="w-full h-full object-cover"
+          style={{ objectPosition: 'center center' }}
+        />
+        <div className="absolute inset-0 bg-black/70"></div>
+      </motion.div>
+      
       {/* Subtle decorative elements with emerald hues */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-emerald-600/15 rounded-full blur-3xl"></div>
