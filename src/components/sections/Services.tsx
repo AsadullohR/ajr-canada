@@ -699,7 +699,7 @@ export function Services() {
   }
 
   return (
-    <section id="services" className="py-20 bg-neutral-900">
+    <section id="services" className="py-20 bg-emerald-900">
       <div className="px-4">
         {/* Section Header */}
         <motion.div
