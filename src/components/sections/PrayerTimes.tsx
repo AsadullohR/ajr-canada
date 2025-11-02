@@ -162,7 +162,7 @@ export function PrayerTimes() {
     target: sectionRef,
     offset: ["start end", "end start"]
   });
-  const y = useTransform(scrollYProgress, [0, 1], ['-10%', '10%']);
+  const y = useTransform(scrollYProgress, [0, 1], ['-50%', '50%']);
 
   useEffect(() => {
     const fetchPrayerTimes = async () => {

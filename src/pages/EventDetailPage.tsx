@@ -280,25 +280,25 @@ export function EventDetailPage() {
             )}
 
             {/* Call to Action Buttons */}
-            <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex flex-col gap-4">
+              {event.registrationLink && (
+                <a
+                  href={event.registrationLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(251,146,60,0.8)] hover:scale-105 active:scale-95"
+                >
+                  <span className="relative z-10">Register Now</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </a>
+              )}
+
               <a
                 href="/"
                 className="text-emerald-600 hover:text-emerald-700 underline font-medium transition-colors duration-200"
               >
                 Back to Home
               </a>
-
-              {event.registrationLink && (
-                <a
-                  href={event.registrationLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(251,146,60,0.8)] hover:scale-105 active:scale-95"
-                >
-                  <span className="relative z-10">Register Now</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </a>
-              )}
             </div>
           </motion.article>
         </div>

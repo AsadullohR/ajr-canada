@@ -216,7 +216,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
   }
 
   return (
-    <div className="relative -mx-4">
+    <div className="relative -mx-4 md:mx-0">
       <div className="relative overflow-hidden">
         {/* Left Arrow */}
         {canScrollLeft && (
@@ -418,7 +418,7 @@ export function Programs() {
   if (loading) {
     return (
       <section id="programs" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4 md:px-0">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mb-4"></div>
             <p className="text-gray-600">Loading programs...</p>
@@ -430,7 +430,7 @@ export function Programs() {
 
   return (
     <section id="programs" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4 md:px-0">
         {/* Section Header */}
         <motion.div
           className="text-center mb-16"
@@ -442,9 +442,6 @@ export function Programs() {
           <h2 className="font-serif font-bold text-4xl md:text-5xl text-gray-900 mb-4">
             Our Programs
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover our diverse range of educational, spiritual, and community programs
-          </p>
         </motion.div>
 
         {/* Responsive Programs Display */}
