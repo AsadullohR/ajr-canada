@@ -3,6 +3,7 @@ import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { HeroSlideshow } from '../components/sections/HeroSlideshow';
 import { PrayerTimes } from '../components/sections/PrayerTimes';
+import { UpcomingEvents } from '../components/sections/UpcomingEvents';
 import { Programs } from '../components/sections/Programs';
 import { Services } from '../components/sections/Services';
 import { Contact } from '../components/sections/Contact';
@@ -16,7 +17,7 @@ export function HomePage() {
       setIsScrolled(window.scrollY > 20);
 
       // Update active section based on scroll position
-      const sections = ['home', 'prayer-times', 'programs', 'services', 'contact'];
+      const sections = ['home', 'prayer-times', 'upcoming-events', 'programs', 'services', 'contact'];
       const current = sections.find(section => {
         const element = document.getElementById(section);
         if (element) {
@@ -67,6 +68,7 @@ export function HomePage() {
       <main className="space-y-0">
         <HeroSlideshow />
         <PrayerTimes />
+        <UpcomingEvents />
         <Programs />
         <Services />
         <Contact />

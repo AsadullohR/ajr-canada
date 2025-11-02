@@ -55,7 +55,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
 
   // Determine navbar background based on section
   const isLightSection = ['programs', 'contact'].includes(activeSection);
-  const isDarkSection = ['home', 'prayer-times', 'services'].includes(activeSection);
+  const isDarkSection = ['home', 'prayer-times', 'services', 'upcoming-events'].includes(activeSection);
   // Default to dark section for unknown sections (like event pages)
   const isUnknownSection = !isLightSection && !isDarkSection;
 

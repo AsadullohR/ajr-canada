@@ -465,16 +465,6 @@ function DesktopScrollContainer({ services }: { services: Service[] }) {
           </button>
         )}
 
-        {/* Right Fade Gradient */}
-        {canScrollRight && (
-          <div className="absolute right-0 top-0 bottom-0 w-40 bg-gradient-to-l from-zinc-900 via-zinc-900/70 to-transparent z-10 pointer-events-none" />
-        )}
-
-        {/* Left Fade Gradient */}
-        {canScrollLeft && (
-          <div className="absolute left-0 top-0 bottom-0 w-40 bg-gradient-to-r from-zinc-900 via-zinc-900/70 to-transparent z-10 pointer-events-none" />
-        )}
-
         <div
           ref={containerRef}
           className="overflow-x-auto overflow-y-visible scrollbar-hide cursor-grab active:cursor-grabbing px-8 py-8 select-none"
@@ -687,10 +677,15 @@ export function Services() {
 
   if (loading) {
     return (
-      <section id="services" className="py-20 ">
-        <div className="px-4">
+      <section id="services" className="relative py-20 bg-gray-900 overflow-hidden">
+        {/* Emerald glow in the middle */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[600px] rounded-full bg-emerald-500/20 blur-3xl"></div>
+        </div>
+
+        <div className="relative px-4">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mb-4"></div>
             <p className="text-white/70">Loading services...</p>
           </div>
         </div>
@@ -699,8 +694,13 @@ export function Services() {
   }
 
   return (
-    <section id="services" className="py-20 bg-neutral-900">
-      <div className="px-4">
+    <section id="services" className="relative py-20 bg-gray-900 overflow-hidden">
+      {/* Emerald glow in the middle */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[600px] h-[600px] rounded-full bg-emerald-500/20 blur-3xl"></div>
+      </div>
+
+      <div className="relative px-4">
         {/* Section Header */}
         <motion.div
           className="text-center mb-16"

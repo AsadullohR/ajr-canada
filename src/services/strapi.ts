@@ -1,6 +1,7 @@
 import { Event, EventsResponse } from '../types/event';
 import { Program, ProgramsResponse } from '../types/program';
 import { Service, ServicesResponse } from '../types/service';
+import { Announcement, AnnouncementsResponse } from '../types/announcement';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 const STRAPI_API_TOKEN = import.meta.env.VITE_STRAPI_API_TOKEN;
@@ -197,6 +198,53 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
   } catch (error) {
     console.error('Error fetching event by slug:', error);
     return null;
+  }
+}
+
+export async function fetchAllEvents(): Promise<EventsResponse> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail'],
+      sort: ['eventDate:asc'],
+      pagination: {
+        pageSize: 100,
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/events?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: EventsResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching all events:', error);
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: 0,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
   }
 }
 
@@ -480,6 +528,169 @@ export async function fetchServiceBySlug(slug: string): Promise<Service | null> 
     return data.data.length > 0 ? data.data[0] : null;
   } catch (error) {
     console.error('Error fetching service by slug:', error);
+    return null;
+  }
+}
+
+// ============================================
+// ANNOUNCEMENTS API FUNCTIONS
+// ============================================
+
+export async function fetchAllAnnouncements(): Promise<AnnouncementsResponse> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail'],
+      sort: ['priority:desc', 'createdAt:desc'],
+      pagination: {
+        pageSize: 100,
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/announcements?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: AnnouncementsResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching announcements:', error);
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: 0,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
+  }
+}
+
+export async function fetchHomepageAnnouncements(): Promise<AnnouncementsResponse> {
+  try {
+    // First try to get announcements marked for homepage
+    let queryString = buildQueryString({
+      populate: ['thumbnail'],
+      filters: {
+        showOnHomepage: true,
+      },
+      sort: ['priority:desc', 'createdAt:desc'],
+      pagination: {
+        pageSize: 10,
+      },
+    });
+
+    let url = `${STRAPI_URL}/api/announcements?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    let response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      console.error('URL:', url);
+      console.error('Make sure:');
+      console.error('1. Announcements collection type exists in Strapi');
+      console.error('2. API permissions are set for "announcements" endpoint');
+      console.error('3. You have created at least one published announcement');
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    let data: AnnouncementsResponse = await response.json();
+    
+    // If no homepage announcements found, fallback to all published announcements
+    if (data.data.length === 0) {
+      console.log('No homepage announcements found, fetching all published announcements...');
+      queryString = buildQueryString({
+        populate: ['thumbnail'],
+        sort: ['priority:desc', 'createdAt:desc'],
+        pagination: {
+          pageSize: 10,
+        },
+      });
+      
+      url = `${STRAPI_URL}/api/announcements?${queryString}`;
+      response = await fetch(url, { headers });
+      
+      if (response.ok) {
+        data = await response.json();
+      }
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching homepage announcements:', error);
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: 0,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
+  }
+}
+
+export async function fetchAnnouncementBySlug(slug: string): Promise<Announcement | null> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail'],
+      filters: {
+        slug: { $eq: slug },
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/announcements?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: AnnouncementsResponse = await response.json();
+    return data.data.length > 0 ? data.data[0] : null;
+  } catch (error) {
+    console.error('Error fetching announcement by slug:', error);
     return null;
   }
 }
