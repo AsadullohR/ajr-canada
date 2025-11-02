@@ -4,10 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
+import { Clock, Users, Calendar, MapPin, Phone, Mail, User } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { fetchProgramBySlug } from '../services/strapi';
 import { Program } from '../types/program';
+
+const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 
 export function ProgramDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -64,27 +67,18 @@ export function ProgramDetailPage() {
   }
 
   // Get thumbnail URL
-  const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
   const thumbnailUrl = program.thumbnail?.formats?.large?.url || program.thumbnail?.url;
   const fullThumbnailUrl = thumbnailUrl
     ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
     : null;
 
-  // Get instructor picture URL
-  const instructorPictureUrl = program.instructorPicture?.url;
-  const fullInstructorPictureUrl = instructorPictureUrl
-    ? (instructorPictureUrl.startsWith('http') ? instructorPictureUrl : `${STRAPI_URL}${instructorPictureUrl}`)
+  const instructorPictureUrl = program.instructorPicture?.url
+    ? (program.instructorPicture.url.startsWith('http') 
+        ? program.instructorPicture.url 
+        : `${STRAPI_URL}${program.instructorPicture.url}`)
     : null;
 
-  // Format time display
-  const formatProgramTime = (timeStr?: string, timeDescription?: string) => {
-    if (timeDescription) {
-      return timeDescription;
-    }
-
-    if (!timeStr) return 'Time TBA';
-
-    // Format time from 24hr to 12hr format
+  const formatTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(':');
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
@@ -92,25 +86,20 @@ export function ProgramDetailPage() {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
-  // Format recurrence pattern
-  const formatRecurrence = (pattern: string) => {
-    const patterns: Record<string, string> = {
-      'daily': 'Daily',
-      'weekly': 'Weekly',
-      'monthly': 'Monthly',
-      'yearly': 'Yearly'
-    };
-    return patterns[pattern] || pattern;
-  };
-
-  // Format audience
-  const formatAudience = (audience: string) => {
-    return audience.charAt(0).toUpperCase() + audience.slice(1);
-  };
-
-  // Format category
-  const formatCategory = (category: string) => {
-    return category.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const getRecurrenceText = () => {
+    let text = program.recurrencePattern.charAt(0).toUpperCase() + program.recurrencePattern.slice(1);
+    
+    if (program.recurrenceInterval && program.recurrenceInterval > 1) {
+      text = `Every ${program.recurrenceInterval} ${program.recurrencePattern === 'weekly' ? 'weeks' : program.recurrencePattern.replace('ly', 's')}`;
+    }
+    
+    if (program.recurrenceDaysOfWeek && program.recurrenceDaysOfWeek.length > 0) {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const dayNames = program.recurrenceDaysOfWeek.map(d => days[d]).join(', ');
+      text += ` (${dayNames})`;
+    }
+    
+    return text;
   };
 
   return (
@@ -132,6 +121,13 @@ export function ProgramDetailPage() {
 
           {/* Content Container - positioned at bottom */}
           <div className="absolute inset-0 flex flex-col justify-end px-4 md:px-8 lg:px-12 xl:px-16 pb-8 md:pb-12">
+            {/* Category Badge */}
+            <div className="inline-block w-fit px-4 py-2 bg-emerald-500 text-white text-sm font-semibold rounded-full mb-4">
+              {program.category.replace('-', ' ').split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ')}
+            </div>
+
             {/* Title */}
             <h1 className="font-serif font-bold text-4xl md:text-5xl text-white leading-tight max-w-4xl mb-6">
               {program.title}
@@ -139,21 +135,23 @@ export function ProgramDetailPage() {
 
             {/* Meta Information */}
             <div className="flex flex-wrap gap-6">
+              {program.eventTime && (
+                <div className="flex items-center gap-2 text-white/90">
+                  <Clock className="w-5 h-5 text-emerald-400" />
+                  <span className="font-medium">
+                    {program.timeDescription || formatTime(program.eventTime)}
+                  </span>
+                </div>
+              )}
+              {program.audience && (
+                <div className="flex items-center gap-2 text-white/90">
+                  <Users className="w-5 h-5 text-emerald-400" />
+                  <span className="font-medium capitalize">{program.audience}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 text-white/90">
-                <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="font-medium">
-                  {formatRecurrence(program.recurrencePattern)} • {formatProgramTime(program.eventTime, program.timeDescription)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-white/90">
-                <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span className="font-medium">
-                  {formatAudience(program.audience)}
-                </span>
+                <Calendar className="w-5 h-5 text-emerald-400" />
+                <span className="font-medium">{getRecurrenceText()}</span>
               </div>
             </div>
           </div>
@@ -190,24 +188,11 @@ export function ProgramDetailPage() {
               </div>
             )}
 
-            {/* Instructor Section */}
-            {program.instructor && (
-              <div className="mb-12 bg-white rounded-xl shadow-lg p-8">
-                <h2 className="font-serif font-bold text-2xl text-gray-900 mb-6">Instructor</h2>
-                <div className="flex items-start gap-6">
-                  {fullInstructorPictureUrl && (
-                    <img
-                      src={fullInstructorPictureUrl}
-                      alt={program.instructor}
-                      className="w-24 h-24 rounded-full object-cover shadow-md"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900">{program.instructor}</h3>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Description */}
+            <div className="mb-8">
+              <h2 className="font-serif font-bold text-2xl text-gray-900 mb-4">About This Program</h2>
+              <p className="text-lg text-gray-700 leading-relaxed">{program.description}</p>
+            </div>
 
             {/* Body Content */}
             {program.body && (
@@ -218,87 +203,133 @@ export function ProgramDetailPage() {
               </div>
             )}
 
-            {/* Additional Information */}
-            {(program.address || program.category || program.capacity || program.age || program.contactEmail || program.contactPhone) && (
-              <div className="bg-gray-100 rounded-lg p-6 mb-8">
-                <h2 className="font-serif font-bold text-2xl text-gray-900 mb-6">Program Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {program.address && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Location</p>
-                        <p className="text-gray-600">{program.address}</p>
-                      </div>
+            {/* Instructor Information */}
+            {program.instructor && (
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-8 mb-8">
+                <h2 className="font-serif font-bold text-2xl text-gray-900 mb-6">Instructor</h2>
+                <div className="flex items-center gap-6">
+                  {instructorPictureUrl ? (
+                    <img
+                      src={instructorPictureUrl}
+                      alt={program.instructor}
+                      className="w-24 h-24 rounded-full object-cover shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+                      <User className="w-12 h-12 text-white" />
                     </div>
                   )}
+                  <div>
+                    <h3 className="font-bold text-xl text-gray-900">{program.instructor}</h3>
+                    <p className="text-gray-600">Program Instructor</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-                  {program.category && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Category</p>
-                        <p className="text-gray-600">{formatCategory(program.category)}</p>
-                      </div>
+            {/* Program Details */}
+            <div className="bg-gray-100 rounded-lg p-6 mb-8">
+              <h2 className="font-serif font-bold text-2xl text-gray-900 mb-6">Program Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {program.recurrencePattern && (
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-5 h-5 text-emerald-500 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">Schedule</p>
+                      <p className="text-gray-600">{getRecurrenceText()}</p>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {program.capacity && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Capacity</p>
-                        <p className="text-gray-600">{program.capacity}</p>
-                      </div>
+                {program.eventTime && (
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-emerald-500 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">Time</p>
+                      <p className="text-gray-600">
+                        {program.timeDescription || formatTime(program.eventTime)}
+                      </p>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {program.age && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Age Group</p>
-                        <p className="text-gray-600">{program.age}</p>
-                      </div>
+                {program.audience && (
+                  <div className="flex items-start gap-3">
+                    <Users className="w-5 h-5 text-emerald-500 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">Audience</p>
+                      <p className="text-gray-600 capitalize">{program.audience}</p>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {program.contactEmail && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Email</p>
-                        <a href={`mailto:${program.contactEmail}`} className="text-emerald-600 hover:text-emerald-700">
-                          {program.contactEmail}
-                        </a>
-                      </div>
+                {program.age && (
+                  <div className="flex items-start gap-3">
+                    <User className="w-5 h-5 text-emerald-500 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">Age Group</p>
+                      <p className="text-gray-600">{program.age}</p>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {program.contactPhone && (
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
-                      <div>
-                        <p className="font-medium text-gray-900">Phone</p>
-                        <a href={`tel:${program.contactPhone}`} className="text-emerald-600 hover:text-emerald-700">
-                          {program.contactPhone}
-                        </a>
-                      </div>
+                {program.address && (
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-emerald-500 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">Location</p>
+                      <p className="text-gray-600">{program.address}</p>
                     </div>
-                  )}
+                  </div>
+                )}
+
+                {program.capacity && (
+                  <div className="flex items-start gap-3">
+                    <Users className="w-5 h-5 text-emerald-500 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">Capacity</p>
+                      <p className="text-gray-600">{program.capacity} participants</p>
+                    </div>
+                  </div>
+                )}
+
+                {program.contactEmail && (
+                  <div className="flex items-start gap-3">
+                    <Mail className="w-5 h-5 text-emerald-500 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">Email</p>
+                      <a href={`mailto:${program.contactEmail}`} className="text-emerald-600 hover:text-emerald-700">
+                        {program.contactEmail}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {program.contactPhone && (
+                  <div className="flex items-start gap-3">
+                    <Phone className="w-5 h-5 text-emerald-500 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">Phone</p>
+                      <a href={`tel:${program.contactPhone}`} className="text-emerald-600 hover:text-emerald-700">
+                        {program.contactPhone}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Registration Info */}
+            {program.registrationRequired && (
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-6 mb-8 rounded-r-lg">
+                <div className="flex items-start gap-3">
+                  <svg className="w-6 h-6 text-amber-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h3 className="font-bold text-amber-900 mb-1">Registration Required</h3>
+                    <p className="text-amber-800">Please register in advance to participate in this program.</p>
+                  </div>
                 </div>
               </div>
             )}
@@ -312,7 +343,7 @@ export function ProgramDetailPage() {
                 Back to Home
               </a>
 
-              {program.registrationRequired && program.registrationLink && (
+              {program.registrationLink && (
                 <a
                   href={program.registrationLink}
                   target="_blank"
@@ -324,12 +355,12 @@ export function ProgramDetailPage() {
                 </a>
               )}
 
-              {program.link && (
+              {program.link && program.linkType === 'external' && (
                 <a
                   href={program.link}
-                  target={program.linkType === 'external' ? '_blank' : '_self'}
-                  rel={program.linkType === 'external' ? 'noopener noreferrer' : undefined}
-                  className="text-emerald-600 hover:text-emerald-700 underline font-medium transition-colors duration-200"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 font-medium"
                 >
                   Learn More
                 </a>
