@@ -163,16 +163,6 @@ export function UpcomingEvents() {
 
               <div className="space-y-4">
                 {displayEvents.map((event, index) => {
-                  const isActive = event.isActive;
-                  const isMuted = event.isMuted;
-                  const isPast = event.isPast;
-
-                  // Get thumbnail URL
-                  const thumbnailUrl = event.thumbnail?.formats?.large?.url || event.thumbnail?.url;
-                  const fullThumbnailUrl = thumbnailUrl
-                    ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
-                    : null;
-
                   return (
                     <motion.div
                       key={event.id}
@@ -180,77 +170,31 @@ export function UpcomingEvents() {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: index * 0.1 }}
-                      className="h-[280px]"
                     >
-                      <motion.div
-                        onClick={() => navigate(`/events/${event.slug}`)}
-                        className={`
-                          h-full bg-black rounded-2xl shadow-2xl overflow-hidden cursor-pointer relative border-2
-                          transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]
-                          ${isActive 
-                            ? 'border-emerald-500 hover:border-emerald-400' 
-                            : isMuted 
-                              ? 'border-white/30 opacity-60 hover:opacity-80' 
-                              : 'border-white/40 opacity-75 hover:opacity-90'
-                          }
-                        `}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <Link
+                        to={`/events/${event.slug}`}
+                        className="block p-4 bg-white/5 hover:bg-white/10 rounded-lg border-l-4 border-emerald-500 transition-all duration-200 group"
                       >
-                        {/* Large Image Background */}
-                        {fullThumbnailUrl && (
-                          <div className="absolute inset-0">
-                            <img
-                              src={fullThumbnailUrl}
-                              alt={event.title}
-                              className="w-full h-full object-cover"
-                            />
-                            {/* Gradient overlay from top (transparent) to bottom (darker) */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
-                          </div>
-                        )}
-
-                        {/* Content Overlay */}
-                        <div className="relative h-full flex flex-col p-4">
-                          {/* Bottom Section - Description Area */}
-                          <div className="mt-auto space-y-2">
-                            {/* Title */}
-                            <h3 className="font-serif font-bold text-xl text-white line-clamp-2 drop-shadow-lg">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h3 className="font-serif font-bold text-lg text-white mb-2 group-hover:text-emerald-300 transition-colors">
                               {event.title}
                             </h3>
-                            
-                            {/* Description with backdrop blur */}
-                            <div className="bg-black/30 backdrop-blur-md rounded-lg p-2 border border-white/10">
-                              {event.description && (
-                                <p className="text-gray-200 text-xs line-clamp-2 mb-2">
-                                  {event.description}
-                                </p>
-                              )}
-                              {/* Date */}
-                              <div className="flex items-center gap-1 text-xs text-gray-200">
-                                <Calendar className="w-3 h-3 text-emerald-300" />
-                                <span>{formatEventDate(event.eventDate, event.eventTime)}</span>
-                              </div>
-                            </div>
-
-                            {/* Action Button */}
-                            <div className="pt-1">
-                              <motion.button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/events/${event.slug}`);
-                                }}
-                                className="group relative inline-flex items-center justify-center w-full px-3 py-1.5 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              >
-                                <span className="relative z-10">Learn More</span>
-                                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                              </motion.button>
+                            {event.description && (
+                              <p className="text-gray-300 text-sm line-clamp-2 mb-2">
+                                {event.description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-1 text-xs text-gray-400">
+                              <Calendar className="w-3 h-3" />
+                              <span>{formatEventDate(event.eventDate, event.eventTime)}</span>
                             </div>
                           </div>
+                          <svg className="w-5 h-5 text-emerald-300 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
                         </div>
-                      </motion.div>
+                      </Link>
                     </motion.div>
                   );
                 })}
@@ -289,12 +233,6 @@ export function UpcomingEvents() {
               ) : (
                 <div className="space-y-4">
                   {announcements.map((announcement, index) => {
-                    // Get thumbnail URL
-                    const thumbnailUrl = announcement.thumbnail?.formats?.large?.url || announcement.thumbnail?.url;
-                    const fullThumbnailUrl = thumbnailUrl
-                      ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
-                      : null;
-
                     return (
                       <motion.div
                         key={announcement.id}
@@ -302,68 +240,31 @@ export function UpcomingEvents() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: index * 0.1 }}
-                        className="h-[280px]"
                       >
-                        <motion.div
-                          onClick={() => navigate(`/announcements/${announcement.slug}`)}
-                          className="h-full bg-black rounded-2xl shadow-2xl overflow-hidden cursor-pointer relative border-2 border-emerald-500 transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:border-emerald-400"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+                        <Link
+                          to={`/announcements/${announcement.slug}`}
+                          className="block p-4 bg-white/5 hover:bg-white/10 rounded-lg border-l-4 border-emerald-500 transition-all duration-200 group"
                         >
-                          {/* Large Image Background */}
-                          {fullThumbnailUrl && (
-                            <div className="absolute inset-0">
-                              <img
-                                src={fullThumbnailUrl}
-                                alt={announcement.title}
-                                className="w-full h-full object-cover"
-                              />
-                              {/* Gradient overlay from top (transparent) to bottom (darker) */}
-                              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
-                            </div>
-                          )}
-
-                          {/* Content Overlay */}
-                          <div className="relative h-full flex flex-col p-4">
-                            {/* Bottom Section - Description Area */}
-                            <div className="mt-auto space-y-2">
-                              {/* Title */}
-                              <h3 className="font-serif font-bold text-xl text-white line-clamp-2 drop-shadow-lg">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <h3 className="font-serif font-bold text-lg text-white mb-2 group-hover:text-emerald-300 transition-colors">
                                 {announcement.title}
                               </h3>
-                              
-                              {/* Description with backdrop blur */}
-                              <div className="bg-black/30 backdrop-blur-md rounded-lg p-2 border border-white/10">
-                                {announcement.description && (
-                                  <p className="text-gray-200 text-xs line-clamp-2 mb-2">
-                                    {announcement.description}
-                                  </p>
-                                )}
-                                {/* Date */}
-                                <div className="flex items-center gap-1 text-xs text-gray-200">
-                                  <Calendar className="w-3 h-3 text-emerald-300" />
-                                  <span>{formatAnnouncementDate(announcement.publishDate || announcement.createdAt)}</span>
-                                </div>
-                              </div>
-
-                              {/* Action Button */}
-                              <div className="pt-1">
-                                <motion.button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/announcements/${announcement.slug}`);
-                                  }}
-                                  className="group relative inline-flex items-center justify-center w-full px-3 py-1.5 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                >
-                                  <span className="relative z-10">Learn More</span>
-                                  <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                </motion.button>
+                              {announcement.description && (
+                                <p className="text-gray-300 text-sm line-clamp-2 mb-2">
+                                  {announcement.description}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-1 text-xs text-gray-400">
+                                <Calendar className="w-3 h-3" />
+                                <span>{formatAnnouncementDate(announcement.publishDate || announcement.createdAt)}</span>
                               </div>
                             </div>
+                            <svg className="w-5 h-5 text-emerald-300 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                           </div>
-                        </motion.div>
+                        </Link>
                       </motion.div>
                     );
                   })}
@@ -403,12 +304,6 @@ export function UpcomingEvents() {
               ) : (
                 <div className="space-y-4">
                   {announcements.map((announcement, index) => {
-                    // Get thumbnail URL
-                    const thumbnailUrl = announcement.thumbnail?.formats?.large?.url || announcement.thumbnail?.url;
-                    const fullThumbnailUrl = thumbnailUrl
-                      ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
-                      : null;
-
                     return (
                       <motion.div
                         key={announcement.id}
@@ -416,68 +311,31 @@ export function UpcomingEvents() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: index * 0.1 }}
-                        className="h-[280px]"
                       >
-                        <motion.div
-                          onClick={() => navigate(`/announcements/${announcement.slug}`)}
-                          className="h-full bg-black rounded-2xl shadow-2xl overflow-hidden cursor-pointer relative border-2 border-emerald-500 transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:border-emerald-400"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+                        <Link
+                          to={`/announcements/${announcement.slug}`}
+                          className="block p-4 bg-white/5 hover:bg-white/10 rounded-lg border-l-4 border-emerald-500 transition-all duration-200 group"
                         >
-                          {/* Large Image Background */}
-                          {fullThumbnailUrl && (
-                            <div className="absolute inset-0">
-                              <img
-                                src={fullThumbnailUrl}
-                                alt={announcement.title}
-                                className="w-full h-full object-cover"
-                              />
-                              {/* Gradient overlay from top (transparent) to bottom (darker) */}
-                              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
-                            </div>
-                          )}
-
-                          {/* Content Overlay */}
-                          <div className="relative h-full flex flex-col p-4">
-                            {/* Bottom Section - Description Area */}
-                            <div className="mt-auto space-y-2">
-                              {/* Title */}
-                              <h3 className="font-serif font-bold text-xl text-white line-clamp-2 drop-shadow-lg">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <h3 className="font-serif font-bold text-lg text-white mb-2 group-hover:text-emerald-300 transition-colors">
                                 {announcement.title}
                               </h3>
-                              
-                              {/* Description with backdrop blur */}
-                              <div className="bg-black/30 backdrop-blur-md rounded-lg p-2 border border-white/10">
-                                {announcement.description && (
-                                  <p className="text-gray-200 text-xs line-clamp-2 mb-2">
-                                    {announcement.description}
-                                  </p>
-                                )}
-                                {/* Date */}
-                                <div className="flex items-center gap-1 text-xs text-gray-200">
-                                  <Calendar className="w-3 h-3 text-emerald-300" />
-                                  <span>{formatAnnouncementDate(announcement.publishDate || announcement.createdAt)}</span>
-                                </div>
-                              </div>
-
-                              {/* Action Button */}
-                              <div className="pt-1">
-                                <motion.button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/announcements/${announcement.slug}`);
-                                  }}
-                                  className="group relative inline-flex items-center justify-center w-full px-3 py-1.5 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                >
-                                  <span className="relative z-10">Learn More</span>
-                                  <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                </motion.button>
+                              {announcement.description && (
+                                <p className="text-gray-300 text-sm line-clamp-2 mb-2">
+                                  {announcement.description}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-1 text-xs text-gray-400">
+                                <Calendar className="w-3 h-3" />
+                                <span>{formatAnnouncementDate(announcement.publishDate || announcement.createdAt)}</span>
                               </div>
                             </div>
+                            <svg className="w-5 h-5 text-emerald-300 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                           </div>
-                        </motion.div>
+                        </Link>
                       </motion.div>
                     );
                   })}
