@@ -68,7 +68,7 @@ function CardItem({
       >
         {/* Image */}
         {fullThumbnailUrl && (
-          <div className="h-48 overflow-hidden">
+          <div className="h-72 overflow-hidden">
             <img
               src={fullThumbnailUrl}
               alt={program.title}
@@ -78,7 +78,7 @@ function CardItem({
         )}
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-5">
           {/* Category Badge */}
           <div className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full mb-3">
             {program.category.replace('-', ' ').split(' ').map(word => 
@@ -188,7 +188,7 @@ function MobileCardStack({ programs }: { programs: Program[] }) {
   }
 
   return (
-    <div className="relative h-[500px] w-full max-w-sm mx-auto">
+    <div className="relative h-[650px] w-full max-w-sm mx-auto">
       {cards.slice(0, 3).map((program, index) => {
         const isTop = index === 0;
         const thumbnailUrl = program.thumbnail?.formats?.medium?.url || program.thumbnail?.url;
@@ -456,14 +456,7 @@ export function Programs() {
     const loadPrograms = async () => {
       setLoading(true);
       const response = await fetchAllPrograms();
-      
-      // Duplicate programs for testing (to have 6 cards)
-      const duplicatedPrograms = [...response.data];
-      while (duplicatedPrograms.length < 6 && response.data.length > 0) {
-        duplicatedPrograms.push(...response.data);
-      }
-      setPrograms(duplicatedPrograms.slice(0, 6));
-      
+      setPrograms(response.data);
       setLoading(false);
     };
 
