@@ -112,7 +112,7 @@ function CardItem({
         <div className="relative h-full flex flex-col p-5">
           {/* Top Section - Category Badge */}
           <div className="mb-auto">
-            <div className="inline-block px-3 py-1 bg-emerald-500/20 backdrop-blur-sm text-emerald-300 text-xs font-semibold rounded-full border border-emerald-500/30">
+            <div className="inline-block px-3 py-1 bg-amber-500/80 backdrop-blur-sm text-white hover:bg-amber-600/80 focus:ring-amber-400 shadow-lg shadow-amber-500/30 text-xs font-semibold rounded-full">
               {program.category.replace('-', ' ').split(' ').map(word => 
                 word.charAt(0).toUpperCase() + word.slice(1)
               ).join(' ')}
@@ -283,6 +283,10 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
   const { scrollXProgress } = useScroll({ container: containerRef });
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
+  const hasDraggedRef = useRef(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
   const checkScroll = () => {
     if (containerRef.current) {
@@ -300,6 +304,53 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
       return () => container.removeEventListener('scroll', checkScroll);
     }
   }, []);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    setIsDragging(true);
+    hasDraggedRef.current = false;
+    const rect = containerRef.current.getBoundingClientRect();
+    setStartX(e.pageX - rect.left);
+    setScrollLeft(containerRef.current.scrollLeft);
+    containerRef.current.style.cursor = 'grabbing';
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    if (containerRef.current) {
+      containerRef.current.style.cursor = 'grab';
+    }
+    // Reset hasDragged after a short delay to allow click to be prevented
+    setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 100);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    if (containerRef.current) {
+      containerRef.current.style.cursor = 'grab';
+    }
+    // Reset hasDragged after a short delay to allow click to be prevented
+    setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 100);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging || !containerRef.current) return;
+    e.preventDefault();
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.pageX - rect.left;
+    const walk = (x - startX) * 2; // Scroll speed multiplier
+    
+    // If the mouse moved more than 5px, consider it a drag
+    if (Math.abs(walk) > 5) {
+      hasDraggedRef.current = true;
+    }
+    
+    containerRef.current.scrollLeft = scrollLeft - walk;
+  };
 
   const scroll = (direction: 'left' | 'right') => {
     if (containerRef.current) {
@@ -357,12 +408,17 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
 
         <div
           ref={containerRef}
-          className="overflow-x-auto overflow-y-visible scrollbar-hide cursor-grab active:cursor-grabbing px-8 py-8"
+          className="overflow-x-auto overflow-y-visible scrollbar-hide cursor-grab active:cursor-grabbing px-8 py-8 select-none"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             maxWidth: '100%',
+            userSelect: 'none',
           }}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
         >
           <div className="flex gap-5" style={{ width: 'max-content', paddingRight: '200px' }}>
         {programs.map((program, index) => {
@@ -382,7 +438,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
             >
               <motion.div
                 className="h-[600px] bg-black rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden cursor-pointer relative group"
-                onClick={() => navigate(`/programs/${program.slug}`)}
+                onClick={() => !hasDraggedRef.current && navigate(`/programs/${program.slug}`)}
                 whileHover="hover"
                 initial="initial"
               >
@@ -410,10 +466,10 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
                     }}
                   >
                     <motion.div 
-                      className="inline-block px-3 py-1 bg-emerald-500/20 backdrop-blur-sm text-emerald-300 text-xs font-semibold rounded-full border border-emerald-500/30"
+                      className="inline-block px-3 py-1 bg-amber-500/80 backdrop-blur-sm text-white hover:bg-amber-600/80 focus:ring-amber-400 shadow-lg shadow-amber-500/30 text-xs font-semibold rounded-full"
                       variants={{
-                        initial: { backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 0.3)' },
-                        hover: { backgroundColor: 'rgba(16, 185, 129, 0.3)', borderColor: 'rgba(16, 185, 129, 0.5)' },
+                        initial: { backgroundColor: 'rgba(245, 158, 11, 0.8)', boxShadow: '0 10px 15px -3px rgba(245, 158, 11, 0.3)' },
+                        hover: { backgroundColor: 'rgba(217, 119, 6, 0.8)', boxShadow: '0 10px 15px -3px rgba(245, 158, 11, 0.4)' },
                       }}
                       transition={{ duration: 0.3 }}
                     >

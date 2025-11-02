@@ -129,7 +129,7 @@ export function ProgramDetailPage() {
           {/* Content Container - positioned at bottom */}
           <div className="absolute inset-0 flex flex-col justify-end px-4 md:px-8 lg:px-12 xl:px-16 pb-8 md:pb-12">
             {/* Category Badge */}
-            <div className="inline-block w-fit px-4 py-2 bg-emerald-500 text-white text-sm font-semibold rounded-full mb-4">
+            <div className="inline-block w-fit px-4 py-2 bg-amber-500/80 backdrop-blur-sm text-white hover:bg-amber-600/80 focus:ring-amber-400 shadow-lg shadow-amber-500/30 text-sm font-semibold rounded-full mb-4">
               {program.category.replace('-', ' ').split(' ').map(word => 
                 word.charAt(0).toUpperCase() + word.slice(1)
               ).join(' ')}
