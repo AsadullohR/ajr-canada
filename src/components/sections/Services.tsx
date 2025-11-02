@@ -677,10 +677,15 @@ export function Services() {
 
   if (loading) {
     return (
-      <section id="services" className="py-20 ">
-        <div className="px-4">
+      <section id="services" className="relative py-20 bg-gray-900 overflow-hidden">
+        {/* Emerald glow in the middle */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[600px] rounded-full bg-emerald-500/20 blur-3xl"></div>
+        </div>
+
+        <div className="relative px-4">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mb-4"></div>
             <p className="text-white/70">Loading services...</p>
           </div>
         </div>
@@ -689,8 +694,13 @@ export function Services() {
   }
 
   return (
-    <section id="services" className="py-20 bg-emerald-900">
-      <div className="px-4">
+    <section id="services" className="relative py-20 bg-gray-900 overflow-hidden">
+      {/* Emerald glow in the middle */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[600px] h-[600px] rounded-full bg-emerald-500/20 blur-3xl"></div>
+      </div>
+
+      <div className="relative px-4">
         {/* Section Header */}
         <motion.div
           className="text-center mb-16"
