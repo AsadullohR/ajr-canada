@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Clock, Users, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, Users, Calendar, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, PanInfo, useScroll, useMotionValue, useTransform } from 'framer-motion';
 import { Program } from '../../types/program';
@@ -104,7 +104,7 @@ function CardItem({
               className="w-full h-full object-cover"
             />
             {/* Gradient overlay from bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/75 to-black/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/50 to-black/40"></div>
           </div>
         )}
 
@@ -160,7 +160,7 @@ function CardItem({
                   )}
                   {program.age && (
                     <div className="flex items-start gap-1.5 text-xs text-gray-300">
-                      <Users className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <User className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
                       <span className="leading-tight">{program.age}</span>
                     </div>
                   )}

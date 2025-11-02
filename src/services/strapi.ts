@@ -44,7 +44,12 @@ function buildQueryString(options: FetchOptions): string {
       if (typeof value === 'object' && value !== null) {
         // Handle nested filter objects (e.g., { $gte: 'date' })
         Object.entries(value).forEach(([operator, operatorValue]) => {
-          params.append(`filters[${key}]${operator}`, String(operatorValue));
+          // Handle $eq specially as it's the default
+          if (operator === '$eq') {
+            params.append(`filters[${key}][$eq]`, String(operatorValue));
+          } else {
+            params.append(`filters[${key}][${operator}]`, String(operatorValue));
+          }
         });
       } else {
         // Handle simple filter values
@@ -73,6 +78,7 @@ export async function fetchFeaturedEvents(): Promise<EventsResponse> {
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
 
     if (STRAPI_API_TOKEN) {
@@ -127,6 +133,7 @@ export async function fetchUpcomingEvents(limit = 10): Promise<EventsResponse> {
     const url = `${STRAPI_URL}/api/events?${queryString}`;
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
 
     if (STRAPI_API_TOKEN) {
@@ -170,6 +177,7 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
 
     if (STRAPI_API_TOKEN) {
@@ -210,6 +218,7 @@ export async function fetchAllPrograms(): Promise<ProgramsResponse> {
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
 
     if (STRAPI_API_TOKEN) {
@@ -264,6 +273,7 @@ export async function fetchFeaturedPrograms(): Promise<ProgramsResponse> {
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
 
     if (STRAPI_API_TOKEN) {
@@ -309,6 +319,7 @@ export async function fetchProgramBySlug(slug: string): Promise<Program | null> 
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
 
     if (STRAPI_API_TOKEN) {
@@ -349,6 +360,7 @@ export async function fetchAllServices(): Promise<ServicesResponse> {
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
 
     if (STRAPI_API_TOKEN) {
@@ -403,6 +415,7 @@ export async function fetchFeaturedServices(): Promise<ServicesResponse> {
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
 
     if (STRAPI_API_TOKEN) {
@@ -448,6 +461,7 @@ export async function fetchServiceBySlug(slug: string): Promise<Service | null> 
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
 
     if (STRAPI_API_TOKEN) {
