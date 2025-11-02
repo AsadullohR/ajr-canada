@@ -75,7 +75,7 @@ function CardItem({
               className="w-full h-full object-cover"
             />
             {/* Gradient overlay from bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/75 to-black/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/50 to-black/40"></div>
           </div>
         )}
 
@@ -155,7 +155,7 @@ function MobileCardStack({ services }: { services: Service[] }) {
 
   const handleClick = (service: Service) => {
     if (!isDragging) {
-      if (service.linkType === 'internal' && service.slug) {
+      if ((service.linkType === 'internal' || !service.link) && service.slug) {
         navigate(`/services/${service.slug}`);
       } else if (service.link) {
         window.location.href = service.link;
