@@ -85,97 +85,106 @@ function CardItem({
       }}
     >
       <div
-        className="h-full bg-gradient-to-br from-black/90 via-black/95 to-black/90 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden pointer-events-auto transition-colors duration-300"
+        className="h-full bg-black rounded-2xl shadow-2xl overflow-hidden pointer-events-auto relative"
         onClick={onClick}
       >
-        {/* Image */}
+        {/* Large Image Background */}
         {fullThumbnailUrl && (
-          <div className="h-48 overflow-hidden">
+          <div className="absolute inset-0">
             <img
               src={fullThumbnailUrl}
               alt={program.title}
               className="w-full h-full object-cover"
             />
+            {/* Gradient overlay from bottom */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-black/10"></div>
           </div>
         )}
 
-        {/* Content */}
-        <div className="p-5">
-          {/* Category Badge */}
-          <div className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-semibold rounded-full mb-3 border border-emerald-500/30">
-            {program.category.replace('-', ' ').split(' ').map(word => 
-              word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ')}
-          </div>
-
-          {/* Title */}
-          <h3 className="font-serif font-bold text-2xl text-white mb-3 line-clamp-2 min-h-[3.5rem]">
-            {program.title}
-          </h3>
-
-          {/* Description */}
-          <p className="text-gray-300 mb-4 line-clamp-3">
-            {program.description}
-          </p>
-
-          {/* Meta Info */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* First Column */}
-            <div className="space-y-2">
-              {program.recurrencePattern && (
-                <div className="flex items-start gap-2 text-sm text-gray-300">
-                  <Calendar className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                  <span>{getRecurrenceText(program)}</span>
-                </div>
-              )}
-              {program.eventTime && (
-                <div className="flex items-start gap-2 text-sm text-gray-300">
-                  <Clock className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                  <span>{program.timeDescription || formatTime(program.eventTime)}</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Second Column */}
-            <div className="space-y-2">
-              {program.audience && (
-                <div className="flex items-start gap-2 text-sm text-gray-300">
-                  <Users className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                  <span className="capitalize">{program.audience}</span>
-                </div>
-              )}
-              {program.age && (
-                <div className="flex items-start gap-2 text-sm text-gray-300">
-                  <Users className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                  <span>{program.age}</span>
-                </div>
-              )}
+        {/* Content Overlay */}
+        <div className="relative h-full flex flex-col p-5">
+          {/* Top Section - Category Badge */}
+          <div className="mb-auto">
+            <div className="inline-block px-3 py-1 bg-emerald-500/20 backdrop-blur-sm text-emerald-300 text-xs font-semibold rounded-full border border-emerald-500/30">
+              {program.category.replace('-', ' ').split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ')}
             </div>
           </div>
 
-          {/* Action Button */}
-          <div className="mt-4 pt-4 border-t border-emerald-500/20">
-            {program.registrationRequired ? (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClick();
-                }}
-                className="w-full px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 transition-all duration-300 hover:shadow-lg"
-              >
-                Register Now
-              </button>
-            ) : (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClick();
-                }}
-                className="w-full px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors duration-200"
-              >
-                Learn More
-              </button>
-            )}
+          {/* Bottom Section - Description Area */}
+          <div className="mt-auto space-y-3">
+            {/* Title */}
+            <h3 className="font-serif font-bold text-3xl text-white line-clamp-2 min-h-[4rem] drop-shadow-lg">
+              {program.title}
+            </h3>
+
+            {/* Description with backdrop blur */}
+            <div className="bg-black/30 backdrop-blur-md rounded-lg p-3 border border-white/10">
+              <p className="text-gray-200 text-sm line-clamp-2 mb-3">
+                {program.description}
+              </p>
+
+              {/* Meta Info */}
+              <div className="grid grid-cols-2 gap-2">
+                {/* First Column */}
+                <div className="space-y-1.5">
+                  {program.recurrencePattern && (
+                    <div className="flex items-start gap-1.5 text-xs text-gray-300">
+                      <Calendar className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <span className="leading-tight">{getRecurrenceText(program)}</span>
+                    </div>
+                  )}
+                  {program.eventTime && (
+                    <div className="flex items-start gap-1.5 text-xs text-gray-300">
+                      <Clock className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <span className="leading-tight">{program.timeDescription || formatTime(program.eventTime)}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Second Column */}
+                <div className="space-y-1.5">
+                  {program.audience && (
+                    <div className="flex items-start gap-1.5 text-xs text-gray-300">
+                      <Users className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <span className="capitalize leading-tight">{program.audience}</span>
+                    </div>
+                  )}
+                  {program.age && (
+                    <div className="flex items-start gap-1.5 text-xs text-gray-300">
+                      <Users className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      <span className="leading-tight">{program.age}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Button */}
+            <div className="pt-2">
+              {program.registrationRequired ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClick();
+                  }}
+                  className="w-full px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 transition-all duration-300 hover:shadow-lg"
+                >
+                  Register Now
+                </button>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClick();
+                  }}
+                  className="w-full px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors duration-200"
+                >
+                  Learn More
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -364,101 +373,181 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
               viewport={{ once: true, amount: 0.3 }}
               transition={{ delay: index * 0.1 }}
             >
-              <div
-                className="h-full bg-gradient-to-br from-black/90 via-black/95 to-black/90 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer group"
+              <motion.div
+                className="h-[600px] bg-black rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden cursor-pointer relative group"
                 onClick={() => navigate(`/programs/${program.slug}`)}
+                whileHover="hover"
+                initial="initial"
               >
-                {/* Image */}
+                {/* Large Image Background */}
                 {fullThumbnailUrl && (
-                  <div className="h-56 overflow-hidden">
+                  <div className="absolute inset-0">
                     <img
                       src={fullThumbnailUrl}
                       alt={program.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
+                    {/* Gradient overlay - becomes more transparent on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-black/10 group-hover:from-black/80 group-hover:via-black/40 group-hover:to-black/5 transition-all duration-500"></div>
                   </div>
                 )}
 
-                {/* Content */}
-                <div className="p-6">
-                  {/* Category Badge */}
-                  <div className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-semibold rounded-full mb-3 border border-emerald-500/30">
-                    {program.category.replace('-', ' ').split(' ').map(word => 
-                      word.charAt(0).toUpperCase() + word.slice(1)
-                    ).join(' ')}
-                  </div>
+                {/* Content Overlay */}
+                <div className="relative h-full flex flex-col p-6">
+                  {/* Top Section - Category Badge */}
+                  <motion.div 
+                    className="mb-auto"
+                    variants={{
+                      initial: { opacity: 1 },
+                      hover: { opacity: 1 },
+                    }}
+                  >
+                    <motion.div 
+                      className="inline-block px-3 py-1 bg-emerald-500/20 backdrop-blur-sm text-emerald-300 text-xs font-semibold rounded-full border border-emerald-500/30"
+                      variants={{
+                        initial: { backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 0.3)' },
+                        hover: { backgroundColor: 'rgba(16, 185, 129, 0.3)', borderColor: 'rgba(16, 185, 129, 0.5)' },
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {program.category.replace('-', ' ').split(' ').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                      ).join(' ')}
+                    </motion.div>
+                  </motion.div>
 
-                  {/* Title */}
-                  <h3 className="font-serif font-bold text-2xl text-white mb-3 line-clamp-2 min-h-[3.5rem]">
-                    {program.title}
-                  </h3>
+                  {/* Bottom Section - Description Area with hover effect */}
+                  <div className="mt-auto space-y-3">
+                    {/* Title */}
+                    <h3 className="font-serif font-bold text-3xl text-white line-clamp-2 min-h-[4rem] drop-shadow-lg">
+                      {program.title}
+                    </h3>
 
-                  {/* Description */}
-                  <p className="text-gray-300 mb-4 line-clamp-3">
-                    {program.description}
-                  </p>
+                    {/* Description with backdrop blur - expands on hover */}
+                    <motion.div 
+                      className="bg-black/30 backdrop-blur-md rounded-lg p-3 border border-white/10 overflow-hidden"
+                      variants={{
+                        initial: { 
+                          y: 0,
+                          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                          backdropFilter: 'blur(12px)',
+                          borderColor: 'rgba(255, 255, 255, 0.1)',
+                          opacity: 0.9,
+                        },
+                        hover: { 
+                          y: -8,
+                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                          backdropFilter: 'blur(16px)',
+                          borderColor: 'rgba(255, 255, 255, 0.2)',
+                          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                          opacity: 1,
+                        },
+                      }}
+                      transition={{
+                        duration: 0.7,
+                        ease: [0.25, 0.46, 0.45, 0.94],
+                      }}
+                    >
+                      <motion.div
+                        className="overflow-hidden"
+                        variants={{
+                          initial: { 
+                            maxHeight: '3rem',
+                          },
+                          hover: { 
+                            maxHeight: '500px',
+                          },
+                        }}
+                        transition={{
+                          duration: 0.7,
+                          ease: [0.25, 0.46, 0.45, 0.94],
+                        }}
+                      >
+                        <motion.p 
+                          className="text-gray-200 text-sm mb-3 line-clamp-2 group-hover:line-clamp-none"
+                          variants={{
+                            initial: { 
+                              opacity: 0.85,
+                              y: 8,
+                            },
+                            hover: { 
+                              opacity: 1,
+                              y: 0,
+                            },
+                          }}
+                          transition={{
+                            duration: 0.7,
+                            ease: [0.25, 0.46, 0.45, 0.94],
+                            delay: 0.05,
+                          }}
+                        >
+                          {program.description}
+                        </motion.p>
+                      </motion.div>
 
-                  {/* Meta Info */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* First Column */}
-                    <div className="space-y-2">
-                      {program.recurrencePattern && (
-                        <div className="flex items-start gap-2 text-sm text-gray-300">
-                          <Calendar className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                          <span>{getRecurrenceText(program)}</span>
+                      {/* Meta Info */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* First Column */}
+                        <div className="space-y-1.5">
+                          {program.recurrencePattern && (
+                            <div className="flex items-start gap-1.5 text-xs text-gray-300">
+                              <Calendar className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                              <span className="leading-tight">{getRecurrenceText(program)}</span>
+                            </div>
+                          )}
+                          {program.eventTime && (
+                            <div className="flex items-start gap-1.5 text-xs text-gray-300">
+                              <Clock className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                              <span className="leading-tight">{program.timeDescription || formatTime(program.eventTime)}</span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {program.eventTime && (
-                        <div className="flex items-start gap-2 text-sm text-gray-300">
-                          <Clock className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                          <span>{program.timeDescription || formatTime(program.eventTime)}</span>
+                        
+                        {/* Second Column */}
+                        <div className="space-y-1.5">
+                          {program.audience && (
+                            <div className="flex items-start gap-1.5 text-xs text-gray-300">
+                              <Users className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                              <span className="capitalize leading-tight">{program.audience}</span>
+                            </div>
+                          )}
+                          {program.age && (
+                            <div className="flex items-start gap-1.5 text-xs text-gray-300">
+                              <Users className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                              <span className="leading-tight">{program.age}</span>
+                            </div>
+                          )}
                         </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Action Button */}
+                    <div className="pt-2">
+                      {program.registrationRequired ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/programs/${program.slug}`);
+                          }}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 transition-all duration-300 hover:shadow-lg"
+                        >
+                          Register Now
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/programs/${program.slug}`);
+                          }}
+                          className="w-full px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors duration-200"
+                        >
+                          Learn More
+                        </button>
                       )}
                     </div>
-                    
-                    {/* Second Column */}
-                    <div className="space-y-2">
-                      {program.audience && (
-                        <div className="flex items-start gap-2 text-sm text-gray-300">
-                          <Users className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                          <span className="capitalize">{program.audience}</span>
-                        </div>
-                      )}
-                      {program.age && (
-                        <div className="flex items-start gap-2 text-sm text-gray-300">
-                          <Users className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                          <span>{program.age}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  <div className="mt-4 pt-4 border-t border-emerald-500/20">
-                    {program.registrationRequired ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/programs/${program.slug}`);
-                        }}
-                        className="w-full px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 transition-all duration-300 hover:shadow-lg"
-                      >
-                        Register Now
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/programs/${program.slug}`);
-                        }}
-                        className="w-full px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors duration-200"
-                      >
-                        Learn More
-                      </button>
-                    )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           );
         })}
