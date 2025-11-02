@@ -75,7 +75,7 @@ function CardItem({
               className="w-full h-full object-cover"
             />
             {/* Gradient overlay from bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/85 via-gray-800/75 to-gray-700/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/75 to-black/60"></div>
           </div>
         )}
 
@@ -390,8 +390,8 @@ function DesktopScrollContainer({ services }: { services: Service[] }) {
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         />
                         {/* Gradient overlay - becomes more transparent on hover */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/85 via-gray-800/75 to-gray-700/60 transition-opacity duration-500 group-hover:opacity-0"></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-gray-800/40 to-gray-700/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/75 to-black/60 transition-opacity duration-500 group-hover:opacity-0"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-black/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
                       </div>
                     ) : null;
                   })()}
@@ -548,7 +548,7 @@ export function Services() {
 
   if (loading) {
     return (
-      <section id="services" className="py-20 bg-emerald-900">
+      <section id="services" className="py-20 ">
         <div className="px-4">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
@@ -560,7 +560,7 @@ export function Services() {
   }
 
   return (
-    <section id="services" className="py-20 bg-emerald-900">
+    <section id="services" className="py-20 bg-neutral-900">
       <div className="px-4">
         {/* Section Header */}
         <motion.div
