@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Clock, Users, Calendar } from 'lucide-react';
+import { Clock, Users, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useMotionValue, useTransform, PanInfo, useScroll, useTransform as scrollTransform } from 'framer-motion';
+import { motion, PanInfo, useScroll } from 'framer-motion';
 import { Program } from '../../types/program';
 import { fetchAllPrograms } from '../../services/strapi';
 
@@ -176,6 +176,36 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollXProgress } = useScroll({ container: containerRef });
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (containerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScroll);
+      return () => container.removeEventListener('scroll', checkScroll);
+    }
+  }, []);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (containerRef.current) {
+      const scrollAmount = 400; // Card width (380) + gap (20px)
+      const newScrollLeft = containerRef.current.scrollLeft + (direction === 'right' ? scrollAmount : -scrollAmount);
+      containerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   if (programs.length === 0) {
     return (
@@ -186,15 +216,50 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="overflow-x-auto overflow-y-hidden scrollbar-hide"
-      style={{
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
-      }}
-    >
-      <div className="flex gap-6 pb-4" style={{ width: 'max-content' }}>
+    <div className="relative -mx-4">
+      <div className="relative overflow-hidden">
+        {/* Left Arrow */}
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/95 hover:bg-white shadow-xl rounded-full p-3 transition-all duration-300 hover:scale-110 group"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-6 h-6 text-gray-700 group-hover:text-emerald-600" />
+          </button>
+        )}
+
+        {/* Right Arrow */}
+        {canScrollRight && (
+          <button
+            onClick={() => scroll('right')}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/95 hover:bg-white shadow-xl rounded-full p-3 transition-all duration-300 hover:scale-110 group"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-6 h-6 text-gray-700 group-hover:text-emerald-600" />
+          </button>
+        )}
+
+        {/* Right Fade Gradient */}
+        {canScrollRight && (
+          <div className="absolute right-0 top-0 bottom-0 w-40 bg-gradient-to-l from-gray-50 via-gray-50/70 to-transparent z-10 pointer-events-none" />
+        )}
+
+        {/* Left Fade Gradient */}
+        {canScrollLeft && (
+          <div className="absolute left-0 top-0 bottom-0 w-40 bg-gradient-to-r from-gray-50 via-gray-50/70 to-transparent z-10 pointer-events-none" />
+        )}
+
+        <div
+          ref={containerRef}
+          className="overflow-x-auto overflow-y-visible scrollbar-hide cursor-grab active:cursor-grabbing px-8 py-8"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            maxWidth: '100%',
+          }}
+        >
+          <div className="flex gap-5" style={{ width: 'max-content', paddingRight: '200px' }}>
         {programs.map((program, index) => {
           const thumbnailUrl = program.thumbnail?.formats?.medium?.url || program.thumbnail?.url;
           const fullThumbnailUrl = thumbnailUrl
@@ -204,7 +269,7 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
           return (
             <motion.div
               key={`desktop-${program.id}-${index}`}
-              className="w-[400px] flex-shrink-0"
+              className="w-[380px] flex-shrink-0"
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -296,13 +361,22 @@ function DesktopScrollContainer({ programs }: { programs: Program[] }) {
             </motion.div>
           );
         })}
+          </div>
+        </div>
       </div>
 
       {/* Scroll Progress Bar */}
       <motion.div
-        className="h-1 bg-emerald-500 rounded-full mt-4"
+        className="h-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full mt-4 mx-4"
         style={{ scaleX: scrollXProgress, transformOrigin: 'left' }}
       />
+
+      {/* Hint Text */}
+      {programs.length > 1 && (
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-500">Click arrows or scroll horizontally</p>
+        </div>
+      )}
     </div>
   );
 }
