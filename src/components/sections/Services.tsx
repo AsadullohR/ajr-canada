@@ -1,58 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { motion, PanInfo, useScroll, useMotionValue, useTransform } from 'framer-motion';
+import { Service } from '../../types/service';
+import { fetchAllServices } from '../../services/strapi';
 
-interface Service {
-  title: string;
-  image: string;
-  description: string;
-  link: string;
-}
-
-const services: Service[] = [
-  {
-    title: 'Marriages',
-    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop&q=80',
-    description: 'Whether you\'re looking to book your officiant or rent our space, we\'re here to help! Our marriage services include Nikah ceremonies, marriage counseling, and marriage registration.',
-    link: '#contact'
-  },
-  {
-    title: 'Outreach',
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop&q=80',
-    description: 'Our beautiful Islamic faith is a gift to all of humanity - Muslims and Non-Muslims alike. We invest in bringing our community programs and services to new communities.',
-    link: '#contact'
-  },
-  {
-    title: 'Mental Health',
-    image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&h=600&fit=crop&q=80',
-    description: 'AJR Cares is home to our wellness and social services department. We offer counseling, hospital visitations, food bank services and many events & programs.',
-    link: '#contact'
-  },
-  {
-    title: 'Food Bank',
-    image: '/images/community.jpg',
-    description: 'Serving our community for many years, our Food Bank serves hundreds of families on a monthly basis. With rising inflation and need, this service fills a great need for many in our community.',
-    link: '#contact'
-  },
-  {
-    title: 'Funerals',
-    image: 'https://images.unsplash.com/photo-1492496913980-501348b61469?w=800&h=600&fit=crop&q=80',
-    description: 'Losing a loved one is indeed a difficult test. At AJR Canada, we want to help alleviate the logistical burden that comes with funerals so you can focus on being there for your loved ones and taking care of yourself.',
-    link: '#contact'
-  },
-  {
-    title: 'Halal Certification',
-    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=600&fit=crop&q=80',
-    description: 'Over 1 Million Muslims in Canada want the peace of mind that comes from knowing that the food they eat is halal. Our aim at AJR Canada is to make that a reality. Learn more about what we do and how your establishment can get certified!',
-    link: '#contact'
-  },
-  {
-    title: 'Speakers',
-    image: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&h=600&fit=crop&q=80',
-    description: 'At AJR Canada, we want to help you serve your communities through the highest quality programming. We\'re excited to offer you a multitude of high caliber and professional speakers that you can book for your next event or initiative!',
-    link: '#contact'
-  }
-];
+const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 
 // Individual Card Component with drag physics
 interface CardItemProps {
@@ -60,6 +13,7 @@ interface CardItemProps {
   index: number;
   isTop: boolean;
   exitX: number;
+  fullThumbnailUrl: string | null;
   cardsLength: number;
   onDragStart: () => void;
   onDragEnd: ((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void) | undefined;
@@ -71,6 +25,7 @@ function CardItem({
   index, 
   isTop, 
   exitX, 
+  fullThumbnailUrl,
   cardsLength,
   onDragStart,
   onDragEnd,
@@ -112,15 +67,17 @@ function CardItem({
         onClick={onClick}
       >
         {/* Large Image Background */}
-                <div className="absolute inset-0">
-                  <img
-                    src={service.image}
-                    alt={service.title}
-            className="w-full h-full object-cover"
-                  />
-          {/* Gradient overlay from bottom */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/85 via-gray-800/75 to-gray-700/60"></div>
-                </div>
+        {fullThumbnailUrl && (
+          <div className="absolute inset-0">
+            <img
+              src={fullThumbnailUrl}
+              alt={service.title}
+              className="w-full h-full object-cover"
+            />
+            {/* Gradient overlay from bottom */}
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/85 via-gray-800/75 to-gray-700/60"></div>
+          </div>
+        )}
 
         {/* Content Overlay */}
         <div className="relative h-full flex flex-col p-5">
@@ -140,18 +97,26 @@ function CardItem({
 
             {/* Action Button */}
             <div className="pt-2">
-              <motion.a
-                href={service.link}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className="group relative inline-flex items-center justify-center w-full px-4 py-2 font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="relative z-10">Learn More</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </motion.a>
+              {service.link && (
+                <motion.a
+                  href={service.link}
+                  target={service.linkType === 'external' ? '_blank' : undefined}
+                  rel={service.linkType === 'external' ? 'noopener noreferrer' : undefined}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (service.linkType === 'internal' && service.slug) {
+                      e.preventDefault();
+                      onClick();
+                    }
+                  }}
+                  className="group relative inline-flex items-center justify-center w-full px-4 py-2 font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="relative z-10">Learn More</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </motion.a>
+              )}
             </div>
           </div>
         </div>
@@ -162,6 +127,7 @@ function CardItem({
 
 // Mobile Card Stack Component
 function MobileCardStack({ services }: { services: Service[] }) {
+  const navigate = useNavigate();
   const [cards, setCards] = useState<Service[]>(services);
   const [exitX, setExitX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -189,9 +155,13 @@ function MobileCardStack({ services }: { services: Service[] }) {
     }
   };
 
-  const handleClick = (link: string) => {
+  const handleClick = (service: Service) => {
     if (!isDragging) {
-      window.location.href = link;
+      if (service.linkType === 'internal' && service.slug) {
+        navigate(`/services/${service.slug}`);
+      } else if (service.link) {
+        window.location.href = service.link;
+      }
     }
   };
 
@@ -209,6 +179,12 @@ function MobileCardStack({ services }: { services: Service[] }) {
         const isTop = index === 0;
         const cardIndex = cards.indexOf(service);
         const uniqueKey = `${service.title}-${cardIndex}-${index}`;
+        
+        // Get thumbnail URL
+        const thumbnailUrl = service.thumbnail?.formats?.large?.url || service.thumbnail?.url;
+        const fullThumbnailUrl = thumbnailUrl
+          ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
+          : null;
 
         return (
           <CardItem
@@ -217,10 +193,11 @@ function MobileCardStack({ services }: { services: Service[] }) {
             index={index}
             isTop={isTop}
             exitX={exitX}
+            fullThumbnailUrl={fullThumbnailUrl}
             cardsLength={cards.length}
             onDragStart={() => isTop && setIsDragging(true)}
             onDragEnd={isTop ? handleDragEnd : undefined}
-            onClick={() => handleClick(service.link)}
+            onClick={() => handleClick(service)}
           />
         );
       })}
@@ -237,6 +214,7 @@ function MobileCardStack({ services }: { services: Service[] }) {
 
 // Desktop Horizontal Scroll Component
 function DesktopScrollContainer({ services }: { services: Service[] }) {
+  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollXProgress } = useScroll({ container: containerRef });
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -387,20 +365,37 @@ function DesktopScrollContainer({ services }: { services: Service[] }) {
               >
                 <motion.div
                   className="h-[600px] bg-black rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden cursor-pointer relative group border-2 border-emerald-500"
-                  onClick={() => !hasDraggedRef.current && (window.location.href = service.link)}
+                  onClick={() => {
+                    if (!hasDraggedRef.current) {
+                      if (service.linkType === 'internal' && service.slug) {
+                        navigate(`/services/${service.slug}`);
+                      } else if (service.link) {
+                        window.location.href = service.link;
+                      }
+                    }
+                  }}
                   whileHover="hover"
                   initial="initial"
                 >
                   {/* Large Image Background */}
-                  <div className="absolute inset-0">
-                    <img
-                      src={service.image}
-                      alt={service.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    {/* Gradient overlay - becomes more transparent on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/85 via-gray-800/75 to-gray-700/60 group-hover:from-gray-900/60 group-hover:via-gray-800/40 group-hover:to-gray-700/20 transition-all duration-500"></div>
-                  </div>
+                  {(service.thumbnail?.formats?.large?.url || service.thumbnail?.url) && (() => {
+                    const thumbnailUrl = service.thumbnail?.formats?.large?.url || service.thumbnail?.url;
+                    const fullThumbnailUrl = thumbnailUrl
+                      ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
+                      : null;
+                    
+                    return fullThumbnailUrl ? (
+                      <div className="absolute inset-0">
+                        <img
+                          src={fullThumbnailUrl}
+                          alt={service.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                        {/* Gradient overlay - becomes more transparent on hover */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/85 via-gray-800/75 to-gray-700/60 group-hover:from-gray-900/60 group-hover:via-gray-800/40 group-hover:to-gray-700/20 transition-all duration-500"></div>
+                      </div>
+                    ) : null;
+                  })()}
 
                   {/* Content Overlay */}
                   <div className="relative h-full flex flex-col p-6">
@@ -476,18 +471,26 @@ function DesktopScrollContainer({ services }: { services: Service[] }) {
 
                       {/* Action Button */}
                       <div className="pt-2">
-                        <motion.a
-                          href={service.link}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                          className="group relative inline-flex items-center justify-center w-full px-4 py-2 font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <span className="relative z-10">Learn More</span>
-                          <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </motion.a>
+                        {service.link && (
+                          <motion.a
+                            href={service.link}
+                            target={service.linkType === 'external' ? '_blank' : undefined}
+                            rel={service.linkType === 'external' ? 'noopener noreferrer' : undefined}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (service.linkType === 'internal' && service.slug) {
+                                e.preventDefault();
+                                navigate(`/services/${service.slug}`);
+                              }
+                            }}
+                            className="group relative inline-flex items-center justify-center w-full px-4 py-2 font-semibold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,146,60,0.6)] hover:scale-105 active:scale-95"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <span className="relative z-10">Learn More</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          </motion.a>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -517,6 +520,8 @@ function DesktopScrollContainer({ services }: { services: Service[] }) {
 // Main Services Component
 export function Services() {
   const [isMobile, setIsMobile] = useState(false);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -527,6 +532,35 @@ export function Services() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  useEffect(() => {
+    const loadServices = async () => {
+      setLoading(true);
+      try {
+        const response = await fetchAllServices();
+        setServices(response.data);
+      } catch (error) {
+        console.error('Error loading services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServices();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="services" className="py-20 bg-emerald-900">
+        <div className="px-4">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+            <p className="text-white/70">Loading services...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="services" className="py-20 bg-emerald-900">

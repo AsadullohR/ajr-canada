@@ -1,5 +1,6 @@
 import { Event, EventsResponse } from '../types/event';
 import { Program, ProgramsResponse } from '../types/program';
+import { Service, ServicesResponse } from '../types/service';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 const STRAPI_API_TOKEN = import.meta.env.VITE_STRAPI_API_TOKEN;
@@ -326,6 +327,145 @@ export async function fetchProgramBySlug(slug: string): Promise<Program | null> 
     return data.data.length > 0 ? data.data[0] : null;
   } catch (error) {
     console.error('Error fetching program by slug:', error);
+    return null;
+  }
+}
+
+// ============================================
+// SERVICES API FUNCTIONS
+// ============================================
+
+export async function fetchAllServices(): Promise<ServicesResponse> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail'],
+      sort: ['createdAt:desc'],
+      pagination: {
+        pageSize: 100, // Get all services
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/services?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      console.error('URL:', url);
+      console.error('Make sure:');
+      console.error('1. Services collection type exists in Strapi');
+      console.error('2. API permissions are set for "services" endpoint');
+      console.error('3. You have created at least one published service');
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ServicesResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: 0,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
+  }
+}
+
+export async function fetchFeaturedServices(): Promise<ServicesResponse> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail'],
+      filters: {
+        isFeatured: true,
+      },
+      sort: ['createdAt:desc'],
+      pagination: {
+        pageSize: 50,
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/services?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ServicesResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching featured services:', error);
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: 0,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
+  }
+}
+
+export async function fetchServiceBySlug(slug: string): Promise<Service | null> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail'],
+      filters: {
+        slug: { $eq: slug },
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/services?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Strapi API Error (${response.status}):`, errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: ServicesResponse = await response.json();
+    return data.data.length > 0 ? data.data[0] : null;
+  } catch (error) {
+    console.error('Error fetching service by slug:', error);
     return null;
   }
 }
