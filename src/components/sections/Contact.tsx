@@ -58,7 +58,7 @@ export function Contact() {
           className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6 }}
         >
           <h2 className="font-serif font-bold text-4xl md:text-5xl text-gray-900 mb-4">
@@ -74,7 +74,7 @@ export function Contact() {
           className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           {/* Logo */}
@@ -100,7 +100,7 @@ export function Contact() {
                   aria-label={social.label}
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0.5 }}
                   transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
@@ -121,7 +121,7 @@ export function Contact() {
                 key={item.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="group"
               >

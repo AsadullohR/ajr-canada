@@ -261,7 +261,7 @@ export function UpcomingEvents() {
               className="text-center mb-16"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6 }}
             >
               <h2 className="font-serif font-bold text-4xl md:text-5xl text-white mb-4">
@@ -281,7 +281,7 @@ export function UpcomingEvents() {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.6 }}
                 className="bg-white rounded-lg shadow-lg p-6 border-2 border-emerald-500"
                 style={{ boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)' }}
@@ -324,7 +324,7 @@ export function UpcomingEvents() {
                         key={itemKey}
                         initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: true, amount: 0.5 }}
                         transition={{ delay: index * 0.1 }}
                       >
                         <Link
@@ -433,13 +433,13 @@ export function UpcomingEvents() {
               <div className="flex gap-4 mt-6">
                 <Link
                   to="/events"
-                  className="inline-block text-emerald-600 hover:text-emerald-700 font-semibold"
+                  className="inline-block text-emerald-600 hover:text-emerald-700 font-semibold whitespace-nowrap"
                 >
                   View all events →
                 </Link>
                 <a
                   href="#programs"
-                  className="inline-block text-emerald-600 hover:text-emerald-700 font-semibold"
+                  className="inline-block text-emerald-600 hover:text-emerald-700 font-semibold whitespace-nowrap"
                   onClick={(e) => {
                     e.preventDefault();
                     const element = document.getElementById('programs');
@@ -457,7 +457,7 @@ export function UpcomingEvents() {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.6 }}
                 className="bg-white rounded-lg shadow-lg p-6 border-2 border-emerald-500"
                 style={{ boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)' }}
@@ -480,7 +480,7 @@ export function UpcomingEvents() {
                         key={announcement.id}
                         initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: true, amount: 0.5 }}
                         transition={{ delay: index * 0.1 }}
                       >
                         <Link
@@ -542,7 +542,7 @@ export function UpcomingEvents() {
 
               <Link
                 to="/announcements"
-                className="inline-block mt-6 text-emerald-600 hover:text-emerald-700 font-semibold"
+                className="inline-block mt-6 text-emerald-600 hover:text-emerald-700 font-semibold whitespace-nowrap"
               >
                 View all announcements →
               </Link>
