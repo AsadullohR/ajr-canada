@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bell, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import { fetchAllAnnouncements } from '../services/strapi';
@@ -91,9 +91,8 @@ export function AnnouncementsListingPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-gray-950/80 via-gray-900/75 to-gray-950/80"></div>
           
           <div className="relative h-full flex flex-col justify-center items-center px-4">
-            <h1 className="font-serif font-bold text-4xl md:text-5xl text-white text-center mb-4 flex items-center gap-3">
-              <Bell className="w-10 h-10 md:w-12 md:h-12 text-emerald-400" />
-              All Announcements
+            <h1 className="font-serif font-bold text-4xl md:text-5xl text-white text-center mb-4">
+              Announcements
             </h1>
             <p className="text-white/90 text-lg text-center max-w-2xl">
               Stay updated with our latest announcements and notices
@@ -165,7 +164,7 @@ export function AnnouncementsListingPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <h2 className="font-serif font-bold text-3xl text-gray-900 mb-8">
-                All Announcements
+                Recent Announcements
               </h2>
               <div className="space-y-4">
                 {otherAnnouncements.map((announcement, index) => (
@@ -213,7 +212,6 @@ export function AnnouncementsListingPage() {
 
           {announcements.length === 0 && (
             <div className="text-center py-16">
-              <Bell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 text-lg">No announcements found.</p>
             </div>
           )}

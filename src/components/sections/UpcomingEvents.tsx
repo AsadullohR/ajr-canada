@@ -437,12 +437,19 @@ export function UpcomingEvents() {
                 >
                   View all events →
                 </Link>
-                <Link
-                  to="/programs"
+                <a
+                  href="#programs"
                   className="inline-block text-emerald-600 hover:text-emerald-700 font-semibold"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const element = document.getElementById('programs');
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
                 >
                   View all programs →
-                </Link>
+                </a>
               </div>
             </motion.div>
 

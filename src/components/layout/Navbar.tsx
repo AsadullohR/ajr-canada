@@ -48,10 +48,16 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
 
   const navItems = [
     'prayer-times',
+    'upcoming-events',
     'programs',
     'services',
     'contact'
   ];
+
+  // Custom display names for nav items
+  const displayNames: { [key: string]: string } = {
+    'upcoming-events': 'Events',
+  };
 
   // Determine navbar background based on section
   const isLightSection = ['programs', 'contact'].includes(activeSection);
@@ -126,7 +132,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                     activeSection === item ? 'nav-link-active' : ''
                   }`}
                 >
-                  {item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  {displayNames[item] || item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                 </a>
               ))}
               <a
@@ -182,7 +188,7 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                {item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                {displayNames[item] || item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
               </a>
             ))}
           </div>
