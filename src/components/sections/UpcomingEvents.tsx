@@ -287,7 +287,7 @@ export function UpcomingEvents() {
                 style={{ boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)' }}
               >
                 <h3 className="font-serif font-bold text-2xl text-gray-900 mb-6">
-                  Upcoming Events & Programs
+                  Upcoming Events
                 </h3>
 
               {upcomingItems.length === 0 ? (
@@ -430,26 +430,13 @@ export function UpcomingEvents() {
                 </div>
               )}
 
-              <div className="flex gap-4 mt-6">
+              <div className="mt-6">
                 <Link
                   to="/events"
                   className="inline-block text-emerald-600 hover:text-emerald-700 font-semibold whitespace-nowrap"
                 >
                   View all events →
                 </Link>
-                <a
-                  href="#programs"
-                  className="inline-block text-emerald-600 hover:text-emerald-700 font-semibold whitespace-nowrap"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const element = document.getElementById('programs');
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                  }}
-                >
-                  View all programs →
-                </a>
               </div>
             </motion.div>
 
