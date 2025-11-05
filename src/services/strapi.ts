@@ -6,6 +6,167 @@ import { Announcement, AnnouncementsResponse } from '../types/announcement';
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 const STRAPI_API_TOKEN = import.meta.env.VITE_STRAPI_API_TOKEN;
 
+// Cache configuration
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes in milliseconds
+const CACHE_PREFIX = 'strapi_cache_';
+
+// Request deduplication - tracks ongoing requests
+const pendingRequests = new Map<string, Promise<any>>();
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+// Cache utilities
+function getCacheKey(url: string): string {
+  return `${CACHE_PREFIX}${btoa(url)}`;
+}
+
+function getCachedData<T>(cacheKey: string): T | null {
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (!cached) return null;
+
+    const entry: CacheEntry<T> = JSON.parse(cached);
+    const now = Date.now();
+
+    // Check if cache is expired
+    if (now - entry.timestamp > CACHE_TTL) {
+      localStorage.removeItem(cacheKey);
+      return null;
+    }
+
+    return entry.data;
+  } catch (error) {
+    console.error('Error reading cache:', error);
+    return null;
+  }
+}
+
+function setCachedData<T>(cacheKey: string, data: T): void {
+  try {
+    const entry: CacheEntry<T> = {
+      data,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(entry));
+  } catch (error) {
+    // Handle quota exceeded errors gracefully
+    if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+      console.warn('Cache storage full, clearing old entries...');
+      clearOldCacheEntries();
+      // Try again after clearing
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ data, timestamp: Date.now() }));
+      } catch (retryError) {
+        console.error('Failed to cache after clearing:', retryError);
+      }
+    } else {
+      console.error('Error writing cache:', error);
+    }
+  }
+}
+
+function clearOldCacheEntries(): void {
+  try {
+    const keys = Object.keys(localStorage);
+    const now = Date.now();
+    let cleared = 0;
+
+    keys.forEach(key => {
+      if (key.startsWith(CACHE_PREFIX)) {
+        try {
+          const cached = localStorage.getItem(key);
+          if (cached) {
+            const entry: CacheEntry<any> = JSON.parse(cached);
+            if (now - entry.timestamp > CACHE_TTL) {
+              localStorage.removeItem(key);
+              cleared++;
+            }
+          }
+        } catch (error) {
+          // Remove invalid entries
+          localStorage.removeItem(key);
+          cleared++;
+        }
+      }
+    });
+
+    // If still too many entries, remove oldest 50%
+    if (cleared === 0) {
+      const cacheKeys = keys.filter(k => k.startsWith(CACHE_PREFIX));
+      if (cacheKeys.length > 20) {
+        const entries = cacheKeys.map(key => ({
+          key,
+          timestamp: (() => {
+            try {
+              const cached = localStorage.getItem(key);
+              return cached ? JSON.parse(cached).timestamp : 0;
+            } catch {
+              return 0;
+            }
+          })(),
+        }));
+
+        entries.sort((a, b) => a.timestamp - b.timestamp);
+        const toRemove = entries.slice(0, Math.floor(entries.length / 2));
+        toRemove.forEach(entry => localStorage.removeItem(entry.key));
+      }
+    }
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+  }
+}
+
+// Cached fetch wrapper
+async function cachedFetch<T>(
+  url: string,
+  options: RequestInit = {},
+  forceRefresh = false
+): Promise<T> {
+  const cacheKey = getCacheKey(url);
+
+  // Check cache first (unless forcing refresh)
+  if (!forceRefresh) {
+    const cached = getCachedData<T>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+
+    // Check if there's already a pending request for this URL
+    if (pendingRequests.has(url)) {
+      return pendingRequests.get(url)!;
+    }
+  }
+
+  // Make the fetch request
+  const fetchPromise = (async () => {
+    try {
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: T = await response.json();
+
+      // Cache the successful response
+      setCachedData(cacheKey, data);
+
+      return data;
+    } finally {
+      // Remove from pending requests
+      pendingRequests.delete(url);
+    }
+  })();
+
+  // Store pending request for deduplication
+  pendingRequests.set(url, fetchPromise);
+
+  return fetchPromise;
+}
+
 interface FetchOptions {
   populate?: string[];
   filters?: Record<string, unknown>;
@@ -86,20 +247,7 @@ export async function fetchFeaturedEvents(): Promise<EventsResponse> {
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      console.error('URL:', url);
-      console.error('Make sure:');
-      console.error('1. Events collection type exists in Strapi');
-      console.error('2. API permissions are set for "events" endpoint');
-      console.error('3. You have created at least one published event');
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: EventsResponse = await response.json();
+    const data: EventsResponse = await cachedFetch<EventsResponse>(url, { headers });
     return data;
   } catch (error) {
     console.error('Error fetching featured events:', error);
@@ -141,13 +289,7 @@ export async function fetchUpcomingEvents(limit = 10): Promise<EventsResponse> {
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: EventsResponse = await response.json();
+    const data: EventsResponse = await cachedFetch<EventsResponse>(url, { headers });
     return data;
   } catch (error) {
     console.error('Error fetching upcoming events:', error);
@@ -185,15 +327,7 @@ export async function fetchEventBySlug(slug: string): Promise<Event | null> {
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: EventsResponse = await response.json();
+    const data: EventsResponse = await cachedFetch<EventsResponse>(url, { headers });
     return data.data.length > 0 ? data.data[0] : null;
   } catch (error) {
     console.error('Error fetching event by slug:', error);
@@ -222,15 +356,7 @@ export async function fetchAllEvents(): Promise<EventsResponse> {
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: EventsResponse = await response.json();
+    const data: EventsResponse = await cachedFetch<EventsResponse>(url, { headers });
     return data;
   } catch (error) {
     console.error('Error fetching all events:', error);
@@ -273,20 +399,7 @@ export async function fetchAllPrograms(): Promise<ProgramsResponse> {
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      console.error('URL:', url);
-      console.error('Make sure:');
-      console.error('1. Programs collection type exists in Strapi');
-      console.error('2. API permissions are set for "programs" endpoint');
-      console.error('3. You have created at least one published program');
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: ProgramsResponse = await response.json();
+    const data: ProgramsResponse = await cachedFetch<ProgramsResponse>(url, { headers });
     return data;
   } catch (error) {
     console.error('Error fetching programs:', error);
@@ -328,15 +441,7 @@ export async function fetchFeaturedPrograms(): Promise<ProgramsResponse> {
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: ProgramsResponse = await response.json();
+    const data: ProgramsResponse = await cachedFetch<ProgramsResponse>(url, { headers });
     return data;
   } catch (error) {
     console.error('Error fetching featured programs:', error);
@@ -374,15 +479,7 @@ export async function fetchProgramBySlug(slug: string): Promise<Program | null> 
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: ProgramsResponse = await response.json();
+    const data: ProgramsResponse = await cachedFetch<ProgramsResponse>(url, { headers });
     return data.data.length > 0 ? data.data[0] : null;
   } catch (error) {
     console.error('Error fetching program by slug:', error);
@@ -415,20 +512,7 @@ export async function fetchAllServices(): Promise<ServicesResponse> {
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      console.error('URL:', url);
-      console.error('Make sure:');
-      console.error('1. Services collection type exists in Strapi');
-      console.error('2. API permissions are set for "services" endpoint');
-      console.error('3. You have created at least one published service');
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: ServicesResponse = await response.json();
+    const data: ServicesResponse = await cachedFetch<ServicesResponse>(url, { headers });
     return data;
   } catch (error) {
     console.error('Error fetching services:', error);
@@ -470,15 +554,7 @@ export async function fetchFeaturedServices(): Promise<ServicesResponse> {
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: ServicesResponse = await response.json();
+    const data: ServicesResponse = await cachedFetch<ServicesResponse>(url, { headers });
     return data;
   } catch (error) {
     console.error('Error fetching featured services:', error);
@@ -516,15 +592,7 @@ export async function fetchServiceBySlug(slug: string): Promise<Service | null> 
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: ServicesResponse = await response.json();
+    const data: ServicesResponse = await cachedFetch<ServicesResponse>(url, { headers });
     return data.data.length > 0 ? data.data[0] : null;
   } catch (error) {
     console.error('Error fetching service by slug:', error);
@@ -557,15 +625,7 @@ export async function fetchAllAnnouncements(): Promise<AnnouncementsResponse> {
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: AnnouncementsResponse = await response.json();
+    const data: AnnouncementsResponse = await cachedFetch<AnnouncementsResponse>(url, { headers });
     return data;
   } catch (error) {
     console.error('Error fetching announcements:', error);
@@ -608,20 +668,7 @@ export async function fetchHomepageAnnouncements(): Promise<AnnouncementsRespons
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    let response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      console.error('URL:', url);
-      console.error('Make sure:');
-      console.error('1. Announcements collection type exists in Strapi');
-      console.error('2. API permissions are set for "announcements" endpoint');
-      console.error('3. You have created at least one published announcement');
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    let data: AnnouncementsResponse = await response.json();
+    let data: AnnouncementsResponse = await cachedFetch<AnnouncementsResponse>(url, { headers });
     
     // If no homepage announcements found, fallback to all published announcements
     if (data.data.length === 0) {
@@ -635,10 +682,13 @@ export async function fetchHomepageAnnouncements(): Promise<AnnouncementsRespons
       });
       
       url = `${STRAPI_URL}/api/announcements?${queryString}`;
-      response = await fetch(url, { headers });
-      
-      if (response.ok) {
-        data = await response.json();
+      try {
+        const fallbackData = await cachedFetch<AnnouncementsResponse>(url, { headers });
+        if (fallbackData.data.length > 0) {
+          data = fallbackData;
+        }
+      } catch (error) {
+        console.error('Error fetching fallback announcements:', error);
       }
     }
 
@@ -679,18 +729,58 @@ export async function fetchAnnouncementBySlug(slug: string): Promise<Announcemen
       headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
     }
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Strapi API Error (${response.status}):`, errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: AnnouncementsResponse = await response.json();
+    const data: AnnouncementsResponse = await cachedFetch<AnnouncementsResponse>(url, { headers });
     return data.data.length > 0 ? data.data[0] : null;
   } catch (error) {
     console.error('Error fetching announcement by slug:', error);
     return null;
+  }
+}
+
+// ============================================
+// CACHE MANAGEMENT UTILITIES
+// ============================================
+
+/**
+ * Clears all cached Strapi API responses
+ * Useful for forcing fresh data after content updates
+ */
+export function clearStrapiCache(): void {
+  try {
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith(CACHE_PREFIX)) {
+        localStorage.removeItem(key);
+      }
+    });
+    console.log('Strapi cache cleared');
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+  }
+}
+
+/**
+ * Gets cache statistics (useful for debugging)
+ */
+export function getCacheStats(): { totalEntries: number; totalSize: number } {
+  try {
+    const keys = Object.keys(localStorage);
+    const cacheKeys = keys.filter(k => k.startsWith(CACHE_PREFIX));
+    let totalSize = 0;
+
+    cacheKeys.forEach(key => {
+      const value = localStorage.getItem(key);
+      if (value) {
+        totalSize += new Blob([value]).size;
+      }
+    });
+
+    return {
+      totalEntries: cacheKeys.length,
+      totalSize: totalSize, // Size in bytes
+    };
+  } catch (error) {
+    console.error('Error getting cache stats:', error);
+    return { totalEntries: 0, totalSize: 0 };
   }
 }
