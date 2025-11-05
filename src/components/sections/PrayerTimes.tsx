@@ -252,7 +252,8 @@ export function PrayerTimes() {
           <motion.h2
             className="text-4xl font-serif font-semibold text-white md:text-5xl mb-8 text-center"
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             Prayer Times
@@ -268,7 +269,8 @@ export function PrayerTimes() {
             <motion.div
               className="text-center py-12"
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 1 }}
               transition={{ duration: 0.6 }}
             >
               <div className="text-red-300 mb-4">{error}</div>
@@ -296,11 +298,12 @@ export function PrayerTimes() {
                         : 'bg-gradient-to-br from-gray-900/80 via-gray-800/80 to-gray-900/80 border-emerald-500/30 hover:border-emerald-500/60'
                     }`}
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ 
+                    whileInView={{ 
                       opacity: 1, 
                       y: 0,
                       scale: isNext && !isTimingOnly ? 1.05 : 1
                     }}
+                    viewport={{ once: true, amount: 1 }}
                     transition={{ 
                       delay: 0.2 + (index * 0.1),
                       type: "spring",
@@ -417,7 +420,8 @@ export function PrayerTimes() {
             <motion.div
               className="text-center mt-8"
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 1 }}
               transition={{ duration: 0.6, delay: 0.8 }}
             >
               <a
