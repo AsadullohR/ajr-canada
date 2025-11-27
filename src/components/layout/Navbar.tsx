@@ -135,6 +135,14 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                   {displayNames[item] || item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                 </a>
               ))}
+              <Link
+                to="/gallery"
+                className={`nav-link whitespace-nowrap ${textColorClass} ${
+                  activeSection === 'gallery' ? 'nav-link-active' : ''
+                }`}
+              >
+                Gallery
+              </Link>
               <a
                 href="https://app.irm.io/ajrcanada.com"
                 target="_blank"
@@ -191,6 +199,17 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
                 {displayNames[item] || item.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
               </a>
             ))}
+            <Link
+              to="/gallery"
+              className={`block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 whitespace-nowrap ${
+                (isDarkSection || isUnknownSection)
+                  ? 'text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:bg-emerald-50'
+              } ${activeSection === 'gallery' ? 'font-semibold' : ''}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Gallery
+            </Link>
           </div>
         </div>
       )}

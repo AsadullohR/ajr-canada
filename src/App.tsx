@@ -8,6 +8,8 @@ import { ProgramDetailPage } from './pages/ProgramDetailPage';
 import { ServicesDetailPage } from './pages/ServicesDetailPage';
 import { AnnouncementDetailPage } from './pages/AnnouncementDetailPage';
 import { AnnouncementsListingPage } from './pages/AnnouncementsListingPage';
+import { GalleryPage } from './pages/GalleryPage';
+import { GalleryAlbumPage } from './pages/GalleryAlbumPage';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
       <Route path="/services/:slug" element={<ServicesDetailPage />} />
       <Route path="/announcements" element={<AnnouncementsListingPage />} />
       <Route path="/announcements/:slug" element={<AnnouncementDetailPage />} />
+      <Route path="/gallery" element={<GalleryPage />} />
+      <Route path="/gallery/:slug" element={<GalleryAlbumPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
