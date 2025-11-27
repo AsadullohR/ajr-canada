@@ -6,12 +6,113 @@ import { Announcement, AnnouncementsResponse } from '../types/announcement';
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 const STRAPI_API_TOKEN = import.meta.env.VITE_STRAPI_API_TOKEN;
 
+interface GalleryMediaFormat {
+  ext: string | null;
+  url: string;
+  hash: string;
+  mime: string;
+  name: string;
+  path: string | null;
+  size: number;
+  width: number;
+  height: number;
+}
+
+export interface GalleryPhoto {
+  id: number;
+  name: string;
+  alternativeText: string | null;
+  caption: string | null;
+  width: number | null;
+  height: number | null;
+  url: string;
+  previewUrl: string | null;
+  formats?: Record<string, GalleryMediaFormat>;
+  size: number;
+  mime: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GalleryAlbum {
+  id: number;
+  name: string;
+  path: string;
+  photoCount: number;
+  coverPhoto: GalleryPhoto | null;
+}
+
+export interface GalleryAlbumDetail {
+  album: {
+    id: number;
+    name: string;
+    path: string;
+  };
+  photos: GalleryPhoto[];
+}
+
+interface GalleryApiPhoto
+  extends Omit<GalleryPhoto, 'url' | 'previewUrl' | 'formats'> {
+  url: string;
+  previewUrl: string | null;
+  formats?: Record<string, GalleryMediaFormat>;
+}
+
+interface GalleryApiAlbum extends Omit<GalleryAlbum, 'coverPhoto'> {
+  coverPhoto: GalleryApiPhoto | null;
+}
+
+interface GalleryAlbumsResponse {
+  albums: GalleryApiAlbum[];
+}
+
+interface GalleryAlbumPhotosResponse {
+  album: GalleryAlbumDetail['album'];
+  photos: GalleryApiPhoto[];
+}
+
+function toAbsoluteUrl(url?: string | null): string | null {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `${STRAPI_URL}${url}`;
+}
+
+function normalizeFormats(
+  formats?: Record<string, GalleryMediaFormat>
+): Record<string, GalleryMediaFormat> | undefined {
+  if (!formats) return undefined;
+
+  return Object.entries(formats).reduce<Record<string, GalleryMediaFormat>>(
+    (acc, [key, value]) => {
+      acc[key] = {
+        ...value,
+        url: toAbsoluteUrl(value.url) ?? value.url,
+      };
+      return acc;
+    },
+    {}
+  );
+}
+
+function normalizePhoto(photo?: GalleryApiPhoto | null): GalleryPhoto | null {
+  if (!photo) return null;
+
+  return {
+    ...photo,
+    url: toAbsoluteUrl(photo.url) ?? photo.url,
+    previewUrl: toAbsoluteUrl(photo.previewUrl),
+    formats: normalizeFormats(photo.formats),
+  };
+}
+
 // Cache configuration
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes in milliseconds
 const CACHE_PREFIX = 'strapi_cache_';
 
 // Request deduplication - tracks ongoing requests
-const pendingRequests = new Map<string, Promise<any>>();
+const pendingRequests = new Map<string, Promise<unknown>>();
 
 interface CacheEntry<T> {
   data: T;
@@ -79,14 +180,14 @@ function clearOldCacheEntries(): void {
         try {
           const cached = localStorage.getItem(key);
           if (cached) {
-            const entry: CacheEntry<any> = JSON.parse(cached);
+            const entry: CacheEntry<unknown> = JSON.parse(cached);
             if (now - entry.timestamp > CACHE_TTL) {
               localStorage.removeItem(key);
               cleared++;
             }
           }
         } catch (error) {
-          // Remove invalid entries
+          console.warn('Removing invalid cache entry', error);
           localStorage.removeItem(key);
           cleared++;
         }
@@ -136,7 +237,7 @@ async function cachedFetch<T>(
 
     // Check if there's already a pending request for this URL
     if (pendingRequests.has(url)) {
-      return pendingRequests.get(url)!;
+      return pendingRequests.get(url)! as Promise<T>;
     }
   }
 
@@ -733,6 +834,86 @@ export async function fetchAnnouncementBySlug(slug: string): Promise<Announcemen
     return data.data.length > 0 ? data.data[0] : null;
   } catch (error) {
     console.error('Error fetching announcement by slug:', error);
+    return null;
+  }
+}
+
+// ============================================
+// GALLERY API FUNCTIONS
+// ============================================
+
+export async function fetchGalleryAlbums(): Promise<GalleryAlbum[]> {
+  try {
+    const url = `${STRAPI_URL}/api/gallery`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const data = await cachedFetch<GalleryAlbumsResponse>(url, { headers });
+    if (!data || !Array.isArray(data.albums)) {
+      return [];
+    }
+
+    return data.albums.map(album => ({
+      id: album.id,
+      name: album.name,
+      path: album.path,
+      photoCount: album.photoCount ?? 0,
+      coverPhoto: normalizePhoto(album.coverPhoto),
+    }));
+  } catch (error) {
+    console.error('Error fetching gallery albums:', error);
+    return [];
+  }
+}
+
+export async function fetchGalleryAlbumPhotos(
+  albumId: number
+): Promise<GalleryAlbumDetail | null> {
+  if (!albumId) {
+    return null;
+  }
+
+  try {
+    const params = new URLSearchParams({ albumId: String(albumId) });
+    const url = `${STRAPI_URL}/api/gallery?${params.toString()}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const data = await cachedFetch<GalleryAlbumPhotosResponse>(url, { headers });
+
+    if (!data || !data.album) {
+      return null;
+    }
+
+    const photos = (data.photos ?? [])
+      .map(photo => normalizePhoto(photo))
+      .filter((photo): photo is GalleryPhoto => Boolean(photo))
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateA - dateB;
+      });
+
+    return {
+      album: data.album,
+      photos,
+    };
+  } catch (error) {
+    console.error('Error fetching gallery album photos:', error);
     return null;
   }
 }
