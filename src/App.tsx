@@ -10,6 +10,8 @@ import { AnnouncementDetailPage } from './pages/AnnouncementDetailPage';
 import { AnnouncementsListingPage } from './pages/AnnouncementsListingPage';
 import { GalleryPage } from './pages/GalleryPage';
 import { GalleryAlbumPage } from './pages/GalleryAlbumPage';
+import { VerifyCertificatePage } from './pages/VerifyCertificatePage';
+import { RequestCertificatePage } from './pages/RequestCertificatePage';
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
       <Route path="/announcements/:slug" element={<AnnouncementDetailPage />} />
       <Route path="/gallery" element={<GalleryPage />} />
       <Route path="/gallery/:slug" element={<GalleryAlbumPage />} />
+      <Route path="/verify/:code" element={<VerifyCertificatePage />} />
+      <Route path="/request-certificate" element={<RequestCertificatePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
