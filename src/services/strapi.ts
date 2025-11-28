@@ -3,7 +3,9 @@ import { Program, ProgramsResponse } from '../types/program';
 import { Service, ServicesResponse } from '../types/service';
 import { Announcement, AnnouncementsResponse } from '../types/announcement';
 
-const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
+const STRAPI_URL =
+  import.meta.env.VITE_STRAPI_URL ||
+  "https://harmonious-kindness-705e180c6b.strapiapp.com";
 const STRAPI_API_TOKEN = import.meta.env.VITE_STRAPI_API_TOKEN;
 
 interface GalleryMediaFormat {
