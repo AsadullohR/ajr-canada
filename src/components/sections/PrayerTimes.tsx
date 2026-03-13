@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Sun, Moon, Clock, Sunrise, Sunset } from 'lucide-react';
 
 interface PrayerTime {
@@ -157,12 +157,6 @@ export function PrayerTimes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nextPrayerIndex, setNextPrayerIndex] = useState(0);
-  const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  });
-  const y = useTransform(scrollYProgress, [0, 1], ['-50%', '50%']);
 
   useEffect(() => {
     const fetchPrayerTimes = async () => {
@@ -225,12 +219,9 @@ export function PrayerTimes() {
   }, [prayerTimes]);
 
   return (
-    <section ref={sectionRef} id="prayer-times" className="py-24 relative overflow-hidden bg-black">
-      {/* Parallax background image */}
-      <motion.div
-        className="absolute inset-0 w-full h-[140%] -top-[20%]"
-        style={{ y }}
-      >
+    <section id="prayer-times" className="py-24 relative overflow-hidden bg-black">
+      {/* Background image */}
+      <div className="absolute inset-0 w-full h-full">
         <img
           src="/images/stars.jpg"
           alt=""
@@ -238,7 +229,7 @@ export function PrayerTimes() {
           style={{ objectPosition: 'center center' }}
         />
         <div className="absolute inset-0 bg-black/70"></div>
-      </motion.div>
+      </div>
       
       {/* Subtle decorative elements with emerald hues */}
       <div className="absolute inset-0 overflow-hidden">
@@ -249,15 +240,9 @@ export function PrayerTimes() {
       
       <div className="px-4 md:px-8 lg:px-12 xl:px-16 relative">
         <div className="mb-16">
-          <motion.h2
-            className="text-4xl font-serif font-semibold text-white md:text-5xl mb-8 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
+          <h2 className="text-4xl font-serif font-semibold text-white md:text-5xl mb-8 text-center">
             Prayer Times
-          </motion.h2>
+          </h2>
         </div>
         
         <div className="relative">
@@ -266,13 +251,7 @@ export function PrayerTimes() {
               <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-500"></div>
             </div>
           ) : error ? (
-            <motion.div
-              className="text-center py-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 1 }}
-              transition={{ duration: 0.6 }}
-            >
+            <div className="text-center py-12">
               <div className="text-red-300 mb-4">{error}</div>
               <a
                 href={PRAYER_TIMES_URL}
@@ -282,7 +261,7 @@ export function PrayerTimes() {
               >
                 View Prayer Times on Galaxy Stream
               </a>
-            </motion.div>
+            </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 md:gap-4 lg:gap-6">
               {prayerTimes.map((prayer, index) => {
@@ -297,19 +276,6 @@ export function PrayerTimes() {
                         ? 'bg-gradient-to-br from-secondary-50 via-secondary-50 to-secondary-100 border-secondary-500 shadow-secondary-500/30 ring-2 ring-secondary-400/50'
                         : 'bg-gradient-to-br from-gray-900/80 via-gray-800/80 to-gray-900/80 border-emerald-500/30 hover:border-emerald-500/60'
                     }`}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ 
-                      opacity: 1, 
-                      y: 0,
-                      scale: isNext && !isTimingOnly ? 1.05 : 1
-                    }}
-                    viewport={{ once: true, amount: 1 }}
-                    transition={{ 
-                      delay: 0.2 + (index * 0.1),
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20
-                    }}
                     whileHover={{ 
                       scale: isNext && !isTimingOnly ? 1.06 : 1.03,
                       boxShadow: isNext && !isTimingOnly 
@@ -417,13 +383,7 @@ export function PrayerTimes() {
           )}
 
           {!loading && !error && (
-            <motion.div
-              className="text-center mt-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 1 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-            >
+            <div className="text-center mt-8">
               <a
                 href={PRAYER_TIMES_URL}
                 target="_blank"
@@ -435,7 +395,7 @@ export function PrayerTimes() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
               </a>
-            </motion.div>
+            </div>
           )}
         </div>
       </div>
