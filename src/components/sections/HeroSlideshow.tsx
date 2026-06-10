@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchFeaturedEvents } from '../../services/strapi';
+import { fetchFeaturedEvents, fetchFeaturedAnnouncements } from '../../services/strapi';
 import { Event } from '../../types/event';
+import { Announcement } from '../../types/announcement';
 
 interface PrayerTime {
   name: string;
@@ -103,8 +104,9 @@ const getTimeUntilNextPrayer = (prayerTimes: PrayerTime[]): { name: string; hour
 };
 
 interface Slide {
-  type: 'default' | 'event';
+  type: 'default' | 'event' | 'announcement';
   event?: Event;
+  announcement?: Announcement;
 }
 
 export function HeroSlideshow() {
@@ -196,24 +198,33 @@ export function HeroSlideshow() {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch featured events
+  // Fetch featured events and announcements
   useEffect(() => {
-    const loadEvents = async () => {
-      const response = await fetchFeaturedEvents();
-      if (response.data.length > 0) {
-        const eventSlides: Slide[] = response.data.map(event => ({
-          type: 'event' as const,
-          event,
-        }));
-        // Events first, default slide last
-        setSlides([...eventSlides, { type: 'default' }]);
+    const loadSlides = async () => {
+      const [eventsResponse, announcementsResponse] = await Promise.all([
+        fetchFeaturedEvents(),
+        fetchFeaturedAnnouncements(),
+      ]);
+
+      const eventSlides: Slide[] = eventsResponse.data.map(event => ({
+        type: 'event' as const,
+        event,
+      }));
+      const announcementSlides: Slide[] = announcementsResponse.data.map(announcement => ({
+        type: 'announcement' as const,
+        announcement,
+      }));
+
+      if (eventSlides.length > 0 || announcementSlides.length > 0) {
+        // Events first, then announcements, default slide last
+        setSlides([...eventSlides, ...announcementSlides, { type: 'default' }]);
       }
 
       // Mark data as ready
       setDataReady(true);
     };
 
-    loadEvents();
+    loadSlides();
   }, []);
 
   // Once data is ready and progress reaches 95%, complete loading
@@ -275,12 +286,16 @@ export function HeroSlideshow() {
 
   const currentSlideData = slides[currentSlide];
   const isDefaultSlide = currentSlideData.type === 'default';
+  const isEventSlide = currentSlideData.type === 'event';
   const eventData = currentSlideData.event;
+  const announcementData = currentSlideData.announcement;
+  const slideTitle = eventData?.title || announcementData?.title;
 
   const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
   // Use large format if available, otherwise fall back to original
-  const thumbnailUrl = eventData?.thumbnail
-    ? (eventData.thumbnail.formats?.large?.url || eventData.thumbnail.url)
+  const slideThumbnail = eventData?.thumbnail || announcementData?.thumbnail;
+  const thumbnailUrl = slideThumbnail
+    ? (slideThumbnail.formats?.large?.url || slideThumbnail.url)
     : null;
   const fullThumbnailUrl = thumbnailUrl
     ? (thumbnailUrl.startsWith('http') ? thumbnailUrl : `${STRAPI_URL}${thumbnailUrl}`)
@@ -305,6 +320,21 @@ export function HeroSlideshow() {
     const formattedTime = `${hour12}:${minutes} ${ampm}`;
 
     return `${date.toLocaleDateString('en-US', options)} • ${formattedTime}`;
+  };
+
+  const formatAnnouncementDate = (dateStr: string) => {
+    const date = dateStr.includes('T')
+      ? new Date(dateStr)
+      : (() => {
+          const [year, month, day] = dateStr.split('-').map(Number);
+          return new Date(year, month - 1, day);
+        })();
+
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   return (
@@ -574,7 +604,7 @@ export function HeroSlideshow() {
                   </motion.div>
                 </div>
               </div>
-            ) : (
+            ) : isEventSlide ? (
               // Event slide - desktop: two-column layout (text left, image right), mobile: text only
               <div className="h-full w-full relative">
                 {/* Background with pattern */}
@@ -797,6 +827,199 @@ export function HeroSlideshow() {
                   </div>
                 </div>
               </div>
+            ) : (
+              // Announcement slide - desktop: two-column layout (text left, image right), mobile: text only
+              <div className="h-full w-full relative">
+                {/* Background with pattern */}
+                <div className="absolute inset-0 w-full h-full">
+                  <div
+                    className="absolute inset-0 w-full h-full"
+                    style={{
+                      backgroundImage: 'url(/images/pattern_background.jpg)',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  ></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 to-gray-950/60"></div>
+                </div>
+
+                {/* Content */}
+                <div className="relative h-full flex items-center justify-center px-4 md:px-8 lg:px-12 xl:px-16">
+                  <div className="max-w-7xl w-full mx-auto">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                      {/* Left side - Text content */}
+                      <div className="space-y-6 md:space-y-8">
+                        {announcementData?.priority === 'high' && (
+                          <motion.div
+                            className="flex flex-wrap items-center gap-3"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.05 }}
+                          >
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-semibold uppercase tracking-wide bg-red-500/20 text-red-300 border border-red-500/40">
+                              Important
+                            </span>
+                          </motion.div>
+                        )}
+
+                        {/* Announcement Title */}
+                        <motion.h2
+                          className="font-serif font-semibold text-3xl lg:text-6xl text-white leading-tight"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.1 }}
+                        >
+                          {announcementData?.title}
+                        </motion.h2>
+
+                        {/* Announcement Description */}
+                        <motion.p
+                          className="italic text-sm md:text-lg text-emerald-50 leading-relaxed font-serif"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.3 }}
+                        >
+                          {announcementData?.description}
+                        </motion.p>
+
+                        {/* Poster Image - Mobile Only */}
+                        {fullThumbnailUrl && (
+                          <motion.div
+                            className="lg:hidden relative flex items-center justify-center"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.35 }}
+                          >
+                            <button
+                              onClick={() => setIsModalOpen(true)}
+                              className="relative group overflow-hidden rounded-xl shadow-2xl cursor-pointer max-w-sm mx-auto"
+                            >
+                              <img
+                                src={fullThumbnailUrl}
+                                alt={announcementData?.title || 'Announcement'}
+                                className="w-full h-auto max-h-64 object-contain transition-transform duration-500 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100 bg-white/20 backdrop-blur-sm rounded-full p-4 shadow-lg">
+                                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </button>
+                          </motion.div>
+                        )}
+
+                        {/* Announcement Details - Hidden on Mobile */}
+                        <motion.div
+                          className="hidden lg:grid grid-cols-2 gap-x-4 sm:gap-x-6 gap-y-3 text-emerald-100"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.4 }}
+                        >
+                          {announcementData?.publishDate && (
+                            <div className="flex items-center gap-2">
+                              <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              <span className="text-sm">{formatAnnouncementDate(announcementData.publishDate)}</span>
+                            </div>
+                          )}
+                          {announcementData?.category && (
+                            <div className="flex items-center gap-2">
+                              <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                              </svg>
+                              <span className="text-sm">Category: {announcementData.category.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</span>
+                            </div>
+                          )}
+                          {announcementData?.contactEmail && (
+                            <div className="flex items-center gap-2">
+                              <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              <a href={`mailto:${announcementData.contactEmail}`} className="text-sm hover:text-emerald-300 transition-colors">
+                                {announcementData.contactEmail}
+                              </a>
+                            </div>
+                          )}
+                          {announcementData?.contactPhone && (
+                            <div className="flex items-center gap-2">
+                              <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              <a href={`tel:${announcementData.contactPhone}`} className="text-sm hover:text-emerald-300 transition-colors">
+                                {announcementData.contactPhone}
+                              </a>
+                            </div>
+                          )}
+                        </motion.div>
+
+                        {/* Announcement Action Buttons */}
+                        <motion.div
+                          className="flex flex-col sm:flex-row gap-3 sm:gap-4 [&>*]:flex-1 [&>*]:min-w-[200px]"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.5 }}
+                        >
+                          {announcementData?.link && (
+                            <motion.a
+                              href={announcementData.link}
+                              target={announcementData.linkType === 'external' ? '_blank' : undefined}
+                              rel={announcementData.linkType === 'external' ? 'noopener noreferrer' : undefined}
+                              className="group relative inline-flex items-center justify-center px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(251,146,60,0.8)] hover:scale-105 active:scale-95"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <span className="relative z-10">Learn More</span>
+                              <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                              <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-600 rounded-lg blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+                            </motion.a>
+                          )}
+                          {announcementData?.slug && (
+                            <motion.a
+                              href={`/announcements/${announcementData.slug}`}
+                              className="group relative inline-flex items-center justify-center px-6 py-3 text-base md:px-8 md:py-4 md:text-lg lg:px-10 lg:py-5 lg:text-xl font-semibold text-white bg-transparent border-2 border-emerald-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:scale-105 active:scale-95"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <span>Read More</span>
+                            </motion.a>
+                          )}
+                        </motion.div>
+                      </div>
+
+                      {/* Right side - Image (hidden on mobile) */}
+                      {fullThumbnailUrl && (
+                        <motion.div
+                          className="hidden lg:flex relative items-center justify-center max-h-[500px]"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.6, delay: 0.3 }}
+                        >
+                          <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="relative group overflow-hidden rounded-xl shadow-2xl cursor-pointer"
+                          >
+                            <img
+                              src={fullThumbnailUrl}
+                              alt={announcementData?.title || 'Announcement'}
+                              className="max-h-[500px] w-auto object-contain transition-transform duration-500 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100 bg-white/20 backdrop-blur-sm rounded-full p-4 shadow-lg">
+                                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                </svg>
+                              </div>
+                            </div>
+                          </button>
+                        </motion.div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </motion.div>
         </AnimatePresence>
@@ -827,7 +1050,7 @@ export function HeroSlideshow() {
             {/* Full-screen image */}
             <motion.img
               src={fullThumbnailUrl}
-              alt={eventData?.title || 'Event'}
+              alt={slideTitle || 'Slide'}
               className="max-w-full max-h-full object-contain p-4"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

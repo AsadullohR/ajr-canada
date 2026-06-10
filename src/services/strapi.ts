@@ -442,7 +442,7 @@ export async function fetchAllEvents(): Promise<EventsResponse> {
   try {
     const queryString = buildQueryString({
       populate: ['thumbnail'],
-      sort: ['eventDate:asc'],
+      sort: ['eventDate:desc'],
       pagination: {
         pageSize: 100,
       },
@@ -746,6 +746,23 @@ export async function fetchAllAnnouncements(): Promise<AnnouncementsResponse> {
   }
 }
 
+// An announcement with no expiry date never expires. A date-only value
+// (e.g. "2026-06-10") stays visible through the end of that day in local time.
+function isAnnouncementExpired(expiryDate?: string): boolean {
+  if (!expiryDate) return false;
+
+  let expiryTime: number;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(expiryDate)) {
+    const [year, month, day] = expiryDate.split('-').map(Number);
+    expiryTime = new Date(year, month - 1, day, 23, 59, 59, 999).getTime();
+  } else {
+    expiryTime = new Date(expiryDate).getTime();
+  }
+
+  if (Number.isNaN(expiryTime)) return false;
+  return expiryTime < Date.now();
+}
+
 export async function fetchHomepageAnnouncements(): Promise<AnnouncementsResponse> {
   try {
     // First try to get announcements marked for homepage
@@ -795,9 +812,60 @@ export async function fetchHomepageAnnouncements(): Promise<AnnouncementsRespons
       }
     }
 
-    return data;
+    // Hide expired announcements from the homepage (they remain on /announcements)
+    return {
+      ...data,
+      data: data.data.filter(announcement => !isAnnouncementExpired(announcement.expiryDate)),
+    };
   } catch (error) {
     console.error('Error fetching homepage announcements:', error);
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: 0,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
+  }
+}
+
+export async function fetchFeaturedAnnouncements(): Promise<AnnouncementsResponse> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail'],
+      filters: {
+        isFeatured: true,
+      },
+      sort: ['priority:desc', 'createdAt:desc'],
+      pagination: {
+        pageSize: 10,
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/announcements?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const data: AnnouncementsResponse = await cachedFetch<AnnouncementsResponse>(url, { headers });
+
+    // Expired announcements should not be featured in the hero
+    return {
+      ...data,
+      data: data.data.filter(announcement => !isAnnouncementExpired(announcement.expiryDate)),
+    };
+  } catch (error) {
+    console.error('Error fetching featured announcements:', error);
     return {
       data: [],
       meta: {

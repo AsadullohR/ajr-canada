@@ -53,7 +53,7 @@ export function EventsListingPage() {
     const loadEvents = async () => {
       setLoading(true);
       const response = await fetchAllEvents();
-      // Events are already sorted by eventDate:asc from the API
+      // Events are already sorted by eventDate:desc from the API
       setEvents(response.data);
       setLoading(false);
     };
