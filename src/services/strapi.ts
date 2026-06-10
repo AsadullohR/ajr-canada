@@ -746,6 +746,23 @@ export async function fetchAllAnnouncements(): Promise<AnnouncementsResponse> {
   }
 }
 
+// An announcement with no expiry date never expires. A date-only value
+// (e.g. "2026-06-10") stays visible through the end of that day in local time.
+function isAnnouncementExpired(expiryDate?: string): boolean {
+  if (!expiryDate) return false;
+
+  let expiryTime: number;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(expiryDate)) {
+    const [year, month, day] = expiryDate.split('-').map(Number);
+    expiryTime = new Date(year, month - 1, day, 23, 59, 59, 999).getTime();
+  } else {
+    expiryTime = new Date(expiryDate).getTime();
+  }
+
+  if (Number.isNaN(expiryTime)) return false;
+  return expiryTime < Date.now();
+}
+
 export async function fetchHomepageAnnouncements(): Promise<AnnouncementsResponse> {
   try {
     // First try to get announcements marked for homepage
@@ -795,7 +812,11 @@ export async function fetchHomepageAnnouncements(): Promise<AnnouncementsRespons
       }
     }
 
-    return data;
+    // Hide expired announcements from the homepage (they remain on /announcements)
+    return {
+      ...data,
+      data: data.data.filter(announcement => !isAnnouncementExpired(announcement.expiryDate)),
+    };
   } catch (error) {
     console.error('Error fetching homepage announcements:', error);
     return {
