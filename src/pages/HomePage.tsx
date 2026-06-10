@@ -7,6 +7,7 @@ import { UpcomingEvents } from '../components/sections/UpcomingEvents';
 import { Programs } from '../components/sections/Programs';
 import { Services } from '../components/sections/Services';
 import { Contact } from '../components/sections/Contact';
+import { DonationModal } from '../components/common/DonationModal';
 
 export function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -74,6 +75,7 @@ export function HomePage() {
         <Contact />
       </main>
       <Footer />
+      <DonationModal delay={5000} />
     </div>
   );
 }
