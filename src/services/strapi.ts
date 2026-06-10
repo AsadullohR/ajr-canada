@@ -833,6 +833,53 @@ export async function fetchHomepageAnnouncements(): Promise<AnnouncementsRespons
   }
 }
 
+export async function fetchFeaturedAnnouncements(): Promise<AnnouncementsResponse> {
+  try {
+    const queryString = buildQueryString({
+      populate: ['thumbnail'],
+      filters: {
+        isFeatured: true,
+      },
+      sort: ['priority:desc', 'createdAt:desc'],
+      pagination: {
+        pageSize: 10,
+      },
+    });
+
+    const url = `${STRAPI_URL}/api/announcements?${queryString}`;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (STRAPI_API_TOKEN) {
+      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
+    }
+
+    const data: AnnouncementsResponse = await cachedFetch<AnnouncementsResponse>(url, { headers });
+
+    // Expired announcements should not be featured in the hero
+    return {
+      ...data,
+      data: data.data.filter(announcement => !isAnnouncementExpired(announcement.expiryDate)),
+    };
+  } catch (error) {
+    console.error('Error fetching featured announcements:', error);
+    return {
+      data: [],
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: 0,
+          pageCount: 0,
+          total: 0,
+        },
+      },
+    };
+  }
+}
+
 export async function fetchAnnouncementBySlug(slug: string): Promise<Announcement | null> {
   try {
     const queryString = buildQueryString({
