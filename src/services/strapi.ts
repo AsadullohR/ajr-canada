@@ -442,7 +442,7 @@ export async function fetchAllEvents(): Promise<EventsResponse> {
   try {
     const queryString = buildQueryString({
       populate: ['thumbnail'],
-      sort: ['eventDate:asc'],
+      sort: ['eventDate:desc'],
       pagination: {
         pageSize: 100,
       },
