@@ -107,6 +107,7 @@ interface Slide {
   type: 'default' | 'event' | 'announcement';
   event?: Event;
   announcement?: Announcement;
+  sortDate?: number;
 }
 
 export function HeroSlideshow() {
@@ -209,15 +210,22 @@ export function HeroSlideshow() {
       const eventSlides: Slide[] = eventsResponse.data.map(event => ({
         type: 'event' as const,
         event,
+        sortDate: new Date(event.createdAt).getTime(),
       }));
       const announcementSlides: Slide[] = announcementsResponse.data.map(announcement => ({
         type: 'announcement' as const,
         announcement,
+        sortDate: new Date(announcement.createdAt).getTime(),
       }));
 
-      if (eventSlides.length > 0 || announcementSlides.length > 0) {
-        // Events first, then announcements, default slide last
-        setSlides([...eventSlides, ...announcementSlides, { type: 'default' }]);
+      // Interleave events and announcements, most recently created first
+      const contentSlides = [...eventSlides, ...announcementSlides].sort(
+        (a, b) => (b.sortDate ?? 0) - (a.sortDate ?? 0)
+      );
+
+      if (contentSlides.length > 0) {
+        // Recent content first, default slide last
+        setSlides([...contentSlides, { type: 'default' }]);
       }
 
       // Mark data as ready
