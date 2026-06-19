@@ -143,6 +143,14 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
               >
                 Gallery
               </Link>
+              <Link
+                to="/history-agent"
+                className={`nav-link whitespace-nowrap ${textColorClass} ${
+                  activeSection === 'history' ? 'nav-link-active' : ''
+                }`}
+              >
+                History
+              </Link>
               <a
                 href="https://app.irm.io/ajrcanada.com"
                 target="_blank"
@@ -209,6 +217,17 @@ export function Navbar({ isScrolled, activeSection }: NavbarProps) {
               onClick={() => setIsMenuOpen(false)}
             >
               Gallery
+            </Link>
+            <Link
+              to="/history-agent"
+              className={`block px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 whitespace-nowrap ${
+                (isDarkSection || isUnknownSection)
+                  ? 'text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:bg-emerald-50'
+              } ${activeSection === 'history' ? 'font-semibold' : ''}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              History
             </Link>
           </div>
         </div>
